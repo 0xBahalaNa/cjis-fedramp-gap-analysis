@@ -1,0 +1,595 @@
+{
+  "profile": {
+    "uuid": "3460ddad-265e-4ab3-b4d3-0e45204a9326",
+    "metadata": {
+      "title": "CJIS Security Policy v6.0 Overlay on FedRAMP High",
+      "last-modified": "2026-04-01T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.1.2",
+      "remarks": "OSCAL overlay capturing controls where CJIS Security Policy v6.0 (December 2024) imposes requirements beyond the FedRAMP High baseline. CJIS v6.0 aligns with NIST 800-53 Rev 5 and becomes the audit standard April 1, 2026. Each delta control includes four structured parts: baseline-requirement, cjis-addition, implementation-guidance, and evidence-required.",
+      "props": [
+        {
+          "name": "cjis-version",
+          "value": "6.0"
+        },
+        {
+          "name": "cjis-effective-date",
+          "value": "2026-04-01"
+        },
+        {
+          "name": "baseline-reference",
+          "value": "FedRAMP High (NIST 800-53 Rev 5)"
+        }
+      ]
+    },
+    "imports": [
+      {
+        "href": "fedramp-high-profile.json",
+        "include-all": {}
+      }
+    ],
+    "modify": {
+      "alters": [
+        {
+          "control-id": "ps-3",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ps-3_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Personnel Screening",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "personnel"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ps-3_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Background investigation conducted for personnel requiring access to the information system, commensurate with the risk level of the position."
+                    },
+                    {
+                      "id": "ps-3_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Fingerprint-based background check through state and national (FBI) repositories required for ALL personnel with access to CJI, regardless of position risk level. No exceptions for contractors, vendor personnel, or cloud service provider staff with logical or physical access to unencrypted CJI."
+                    },
+                    {
+                      "id": "ps-3_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Establish fingerprint submission process with the state CSA (CJIS Systems Agency). Ensure all CSP personnel with access to unencrypted CJI complete fingerprint-based checks prior to access provisioning. Maintain records of background check completion and adjudication results. Re-screening is required when personnel change roles or at intervals defined by the CSA."
+                    },
+                    {
+                      "id": "ps-3_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Fingerprint submission records; background check adjudication results from state/FBI repositories; personnel roster cross-referenced with CJI access list; evidence of pre-access screening completion; re-screening schedule and completion records."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ps-6",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ps-6_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Access Agreements",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "personnel"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ps-6_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Signed rules of behavior and acceptable use agreements required before access to the information system."
+                    },
+                    {
+                      "id": "ps-6_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "CJIS Security Addendum (CSA form) must be executed by all personnel with access to CJI. The Security Addendum is a binding agreement separate from standard rules of behavior that specifically addresses CJI handling, dissemination, and sanctions for misuse."
+                    },
+                    {
+                      "id": "ps-6_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Obtain the CJIS Security Addendum template from the state CSA. Integrate addendum signing into the onboarding workflow prior to CJI access provisioning. Maintain signed addendums on file. Ensure addendums are re-executed when terms change or at intervals required by the CSA."
+                    },
+                    {
+                      "id": "ps-6_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Signed CJIS Security Addendum for each individual with CJI access; addendum tracking log with execution dates; evidence addendum signing occurs before CJI access is granted; re-execution records when terms are updated."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ia-2",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ia-2_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Identification and Authentication",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "authentication"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ia-2_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Multi-factor authentication required for access to the information system per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "ia-2_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Advanced Authentication required for CJI access: AAL2 (per NIST SP 800-63-3) phishing-resistant multi-factor authentication. Must use two of: something you know, something you have, something you are. Advanced Authentication is mandatory when accessing CJI from outside a physically secure location or over any network."
+                    },
+                    {
+                      "id": "ia-2_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Deploy AAL2-compliant MFA for all CJI access paths. Phishing-resistant authenticators (FIDO2/WebAuthn, PIV/CAC, or hardware tokens) are preferred. Software OTP tokens meet AAL2 minimum but do not satisfy phishing-resistance. Ensure MFA is enforced at the application layer, not just the network perimeter. Document which authenticator types are used and their AAL level."
+                    },
+                    {
+                      "id": "ia-2_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "MFA configuration screenshots/exports; authenticator type inventory and AAL classification; authentication policy documentation specifying CJIS Advanced Authentication requirements; logs demonstrating MFA enforcement for CJI access; network diagrams showing MFA enforcement points."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ia-5",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ia-5_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Authenticator Management",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "authentication"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ia-5_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Password complexity, rotation, and authenticator management per FedRAMP High baseline parameters."
+                    },
+                    {
+                      "id": "ia-5_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Prescriptive password requirements for CJI systems: minimum 8 characters; must include characters from at least three of four categories (uppercase, lowercase, numeric, special); maximum password lifetime of 90 days; cannot reuse last 10 passwords. These are floor requirements — the CJIS policy sets specific values rather than deferring to organization-defined parameters."
+                    },
+                    {
+                      "id": "ia-5_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Configure identity provider and directory services to enforce CJIS password parameters. Document password policy settings and map them to CJIS requirements. If using SSO, ensure the upstream IdP enforces CJIS-compliant password policy. Note: CJIS password requirements may conflict with NIST 800-63B guidance (which discourages periodic rotation) — CJIS requirements take precedence for CJI systems."
+                    },
+                    {
+                      "id": "ia-5_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Password policy configuration exports from IdP/directory; screenshots of complexity enforcement settings; password history and rotation settings; documentation mapping CJIS password requirements to implemented configuration."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "mp-6",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "mp-6_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Media Sanitization",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "media-protection"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "mp-6_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Media sanitized before disposal or reuse per FedRAMP High baseline using approved methods."
+                    },
+                    {
+                      "id": "mp-6_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Prescriptive sanitization procedures per media type for CJI. Physical destruction (shredding, incineration, degaussing to the point of destruction) required for media that cannot be sanitized to NIST 800-88 Purge level. Electronic media must be sanitized to Purge level minimum. Paper and microform containing CJI must be cross-cut shredded or incinerated. Sanitization must be witnessed or verified, with records maintained."
+                    },
+                    {
+                      "id": "mp-6_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Develop CJI-specific media sanitization procedures referencing NIST 800-88 guidelines. Create a media sanitization matrix mapping media types to approved sanitization methods. Implement verification procedures (witnessed destruction or sanitization verification testing). Maintain sanitization logs with media identifier, method used, date, and verifier."
+                    },
+                    {
+                      "id": "mp-6_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Media sanitization policy and procedures specific to CJI; sanitization matrix by media type; sanitization/destruction logs with dates, methods, and witness signatures; certificates of destruction from third-party destruction vendors; NIST 800-88 Purge verification records."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "sc-12",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "sc-12_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Cryptographic Key Management",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "encryption"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "sc-12_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Cryptographic key management using FIPS-validated cryptographic modules per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "sc-12_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Agency must manage encryption keys for CJI. The law enforcement agency (not the CSP) must retain control over key creation, distribution, storage, rotation, and revocation. FIPS 140-2 or FIPS 140-3 validated cryptographic modules are required. The agency must have the ability to immediately revoke the CSP's access to CJI by revoking or rotating keys."
+                    },
+                    {
+                      "id": "sc-12_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Implement customer-managed keys (CMK) in the CSP's key management service (e.g., AWS KMS with customer-managed CMKs). Ensure the agency has sole administrative access to key policies. Document key lifecycle procedures including creation, rotation schedule, and emergency revocation. Ensure FIPS 140-2/3 validation certificates are available for all cryptographic modules in the key management chain."
+                    },
+                    {
+                      "id": "sc-12_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Key management policy documenting agency key control; KMS configuration showing customer-managed keys; key policy documents showing agency-only administrative access; FIPS 140-2/3 validation certificates for cryptographic modules; key rotation schedules and logs; emergency key revocation procedures and test results."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "sc-13",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "sc-13_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Cryptographic Protection",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "encryption"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "sc-13_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "FIPS-validated cryptography required for information protection per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "sc-13_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Minimum cryptographic strength requirements for CJI: 128-bit symmetric key length (AES-128 or higher) and 2048-bit asymmetric key length (RSA-2048 or equivalent ECC). All cryptographic modules must be FIPS 140-2 or FIPS 140-3 validated. These are floor requirements — the CJIS policy mandates specific minimum key lengths rather than deferring to organization-defined parameters."
+                    },
+                    {
+                      "id": "sc-13_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Audit all encryption configurations for CJI data paths (at rest, in transit, in use) to verify minimum key lengths. Document FIPS validation status of each cryptographic module. Ensure TLS configurations use FIPS-approved cipher suites with adequate key lengths. Verify that key generation processes produce keys meeting minimum length requirements."
+                    },
+                    {
+                      "id": "sc-13_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Inventory of cryptographic implementations protecting CJI with key lengths documented; FIPS 140-2/3 validation certificates for each module; TLS/SSL configuration showing cipher suites and key lengths; encryption configuration for data-at-rest showing algorithm and key length."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "sc-28",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "sc-28_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Protection of Information at Rest",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "encryption"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "sc-28_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Encryption at rest required for protection of information stored on the system per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "sc-28_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Agency-managed customer master key (CMK) required for all CJI at rest. The agency (not the CSP) must control the encryption key used to protect stored CJI. The agency must retain the ability to revoke the CSP's access to CJI at any time by revoking or rotating the CMK. CSP-managed default encryption keys are insufficient — agency key control is mandatory."
+                    },
+                    {
+                      "id": "sc-28_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Configure all storage services containing CJI to use agency-managed CMKs (e.g., AWS KMS CMK with agency-controlled key policy, not aws/s3 default keys). Ensure key policies restrict administrative actions to agency IAM principals. Implement key rotation per agency policy. Test key revocation procedures to verify CJI becomes inaccessible when the CMK is disabled or deleted."
+                    },
+                    {
+                      "id": "sc-28_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Storage service encryption configuration showing CMK ARN/ID; KMS key policy showing agency-only administrative access; inventory of all storage locations containing CJI mapped to their encryption keys; key rotation configuration and logs; key revocation test results demonstrating CJI inaccessibility."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "au-6",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "au-6_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Audit Record Review",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "audit"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "au-6_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Review and analysis of audit records per organization-defined frequency for indications of inappropriate or unusual activity per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "au-6_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Weekly audit log review required for CJI-related events. Minimum 1-year retention period for audit logs related to CJI access and transactions. The review frequency and retention period are prescriptive — CJIS does not defer to organization-defined parameters for CJI audit logs."
+                    },
+                    {
+                      "id": "au-6_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Configure SIEM or log management to generate weekly review reports for CJI-related audit events. Define CJI audit events (access, modification, deletion, query, export of CJI). Set log retention to minimum 1 year for CJI-related logs. Assign personnel responsible for weekly review and document the review process. Establish escalation procedures for anomalous findings."
+                    },
+                    {
+                      "id": "au-6_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Weekly audit review reports with reviewer signature/acknowledgment; log retention configuration showing 1-year minimum; SIEM rules or queries used for CJI audit review; sample review reports demonstrating review completeness; escalation records for identified anomalies."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ac-2",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ac-2_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Account Management",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "access-control"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ac-2_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Account lifecycle management including creation, modification, disabling, and removal per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "ac-2_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Quarterly access reviews required for all users authorized to access CJI. Reviews must verify continued need-to-know and appropriate privilege levels. Accounts for personnel who no longer require CJI access must be disabled immediately upon determination, not at the next review cycle."
+                    },
+                    {
+                      "id": "ac-2_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Implement quarterly user access review process for CJI-authorized accounts. Generate access review reports from the identity provider listing all accounts with CJI access, their roles, and last access date. Require manager/data owner certification of continued need. Integrate with HR/personnel processes to trigger immediate access revocation upon role change or separation."
+                    },
+                    {
+                      "id": "ac-2_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Quarterly access review reports with reviewer certification; CJI-authorized user roster with roles and justification; evidence of access revocation for personnel no longer requiring CJI access; access review policy documenting quarterly cadence; IAM configuration showing review-triggered account actions."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ir-6",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ir-6_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Incident Reporting",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "incident-response"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ir-6_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Incident reporting to US-CERT and organization-defined authorities per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "ir-6_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Security incidents involving CJI must be reported to the CJIS Systems Officer (CSO) and the FBI CJIS Division in addition to standard FedRAMP reporting channels. Reporting must occur within timeframes established by the state CSA. The incident reporting chain is: local agency → state CSA/CSO → FBI CJIS Division."
+                    },
+                    {
+                      "id": "ir-6_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Update incident response plan to include CJIS-specific reporting chain. Document CSO and FBI CJIS Division contact information. Define what constitutes a CJI security incident (unauthorized access, loss, or disclosure of CJI). Establish reporting templates that satisfy both FedRAMP (US-CERT) and CJIS (CSO/FBI) requirements. Conduct tabletop exercises including CJIS reporting procedures."
+                    },
+                    {
+                      "id": "ir-6_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Incident response plan with CJIS reporting procedures; CSO and FBI CJIS Division contact information documented; incident reporting templates; evidence of tabletop exercises including CJIS reporting chain; sample incident reports demonstrating dual reporting (US-CERT and CJIS)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "pe-17",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "pe-17_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Alternate Work Site",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "physical-environmental"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "pe-17_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Alternate work sites authorized with security controls equivalent to primary site per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "pe-17_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Remote CJI access locations must implement specific controls: Advanced Authentication is mandatory (cannot rely on physical location security); encrypted VPN or equivalent secure connection required; personally owned devices must meet agency security configuration standards; CJI must not be stored on personally owned devices unless encrypted with agency-managed keys and approved by the CSA."
+                    },
+                    {
+                      "id": "pe-17_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define approved remote access methods for CJI (VPN configuration, VDI, etc.). Ensure Advanced Authentication is enforced regardless of location. Establish BYOD policy for CJI access if applicable, including required device security configurations. Implement endpoint compliance checks before granting remote CJI access. Document approved alternate work sites and their security controls."
+                    },
+                    {
+                      "id": "pe-17_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Remote access policy specific to CJI; VPN configuration showing encryption and MFA enforcement; BYOD policy and device compliance requirements; endpoint compliance check configuration; list of approved alternate work sites with documented security controls."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "at-2",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "at-2_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 Delta — Awareness Training",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "training"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "at-2_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Security awareness training for all information system users annually per FedRAMP High baseline."
+                    },
+                    {
+                      "id": "at-2_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "CJIS Security Awareness Training required within 6 months of initial CJI access authorization. Biennial (every 2 years) refresher training required thereafter. Training content must cover CJIS-specific topics: CJI handling and dissemination rules, Security Addendum obligations, incident reporting requirements for CJI, and sanctions for policy violations."
+                    },
+                    {
+                      "id": "at-2_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Develop or obtain CJIS-specific security awareness training content. Track training completion dates per individual with CJI access. Ensure new personnel complete training within 6 months of CJI access grant. Schedule biennial refresher training. Integrate training tracking with CJI access management — personnel with expired training should be flagged for access review."
+                    },
+                    {
+                      "id": "at-2_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "CJIS Security Awareness Training curriculum/content; training completion records per individual with dates; evidence of training within 6 months of initial CJI access; biennial refresher completion records; training tracking system configuration showing CJIS training requirements."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

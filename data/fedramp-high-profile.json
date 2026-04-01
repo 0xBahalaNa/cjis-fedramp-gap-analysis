@@ -1,0 +1,18 @@
+{
+  "profile": {
+    "uuid": "32c5d1f9-ed34-4362-a9f7-f00654666087",
+    "metadata": {
+      "title": "FedRAMP High Baseline Reference Profile",
+      "last-modified": "2026-04-01T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.1.2",
+      "remarks": "Reference profile for the FedRAMP High baseline. Imports the official GSA FedRAMP Rev 5 HIGH baseline resolved profile catalog, which itself resolves from the NIST 800-53 Rev 5 catalog. This profile serves as the baseline against which CJIS v6.0 deltas are measured."
+    },
+    "imports": [
+      {
+        "href": "https://raw.githubusercontent.com/GSA/fedramp-automation/master/dist/content/rev5/baselines/json/FedRAMP_rev5_HIGH-baseline-resolved-profile_catalog.json",
+        "include-all": {}
+      }
+    ]
+  }
+}
