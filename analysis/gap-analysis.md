@@ -9,8 +9,8 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 | AC-2 | Access Control | Pending |
 | AT-2 | Training | Pending |
 | AU-6 | Audit | Pending |
-| IA-2 | Authentication | Pending |
-| IA-5 | Authentication | Pending |
+| IA-2 | Authentication | Complete |
+| IA-5 | Authentication | Complete |
 | IR-6 | Incident Response | Pending |
 | MP-6 | Media Protection | Pending |
 | PE-17 | Physical/Environmental | Pending |
@@ -133,3 +133,123 @@ An auditor will expect to see:
 - **Contractor and subcontractor coverage.** The addendum requirement applies to all personnel with CJI access, including third-party contractors. The CSP must ensure its vendors execute addendums if their personnel access CJI.
 - **Relationship to PS-3.** The Security Addendum and fingerprint-based background check (PS-3) are complementary — both must be completed before CJI access is granted. The addendum is the *legal agreement*; the fingerprint check is the *screening verification*.
 - **Records retention.** Retain signed addendums for the duration required by the CSA. Some states require retention beyond the period of CJI access.
+
+---
+
+## Identification and Authentication
+
+### IA-2 — Identification and Authentication (Organizational Users)
+
+**NIST 800-53 Rev 5 Control:** Uniquely identify and authenticate organizational users and associate that unique identification with processes acting on behalf of those users.
+
+**CJIS v6.0 Reference:** Section 5.6 (Identification and Authentication)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires multi-factor authentication for all users through enhancements IA-2(1) (MFA for privileged accounts) and IA-2(2) (MFA for non-privileged accounts). The baseline requires:
+
+- **Unique identification** — each user has a distinct identity, no shared accounts for accountability purposes
+- **Multi-factor authentication** — two or more factors from: something you know, something you have, something you are
+- **Network and local access** — MFA applies to both network (remote) and local access for privileged accounts
+
+FedRAMP High does not prescribe a specific Authentication Assurance Level (AAL) from NIST SP 800-63-3, nor does it mandate phishing resistance. An organization using SMS-based OTP as a second factor satisfies the FedRAMP High baseline, even though SMS OTP is vulnerable to SIM-swapping and interception attacks.
+
+#### CJIS v6.0 Delta
+
+CJIS defines "Advanced Authentication" with specific requirements that narrow the acceptable MFA implementations:
+
+- **AAL2 minimum** — per NIST SP 800-63-3, AAL2 requires multi-factor authentication using authenticators with proven possession through a cryptographic protocol or comparable mechanism. This eliminates some weaker MFA implementations that satisfy AAL1 but not AAL2.
+- **Phishing-resistant authenticators preferred** — while AAL2 is the floor, CJIS guidance favors phishing-resistant methods (FIDO2/WebAuthn, PIV/CAC cards, hardware security keys). Software OTP tokens (TOTP apps) meet AAL2 but are not phishing-resistant.
+- **Mandatory trigger conditions** — Advanced Authentication is required when accessing CJI from outside a physically secure location (defined by the agency) or when accessing CJI over any network. This means remote access to CJI always requires Advanced Authentication.
+- **Two distinct factors required** — must use two of the three categories: something you know (password/PIN), something you have (token/smart card/phone), something you are (biometric). Two factors from the same category do not satisfy the requirement.
+
+**Why this matters:** A CSP using basic MFA (e.g., password + SMS OTP) satisfies FedRAMP High but may not satisfy CJIS Advanced Authentication. The distinction is the assurance level — CJIS requires AAL2, which demands that the authenticator prove possession through a cryptographic protocol. SMS OTP does not meet AAL2 because the phone number is not a cryptographic authenticator. Organizations must evaluate their current MFA stack against NIST SP 800-63-3 AAL2 requirements, not just confirm that "MFA is enabled."
+
+#### NIST SP 800-63-3 AAL Levels (Reference)
+
+Understanding the AAL hierarchy is essential for evaluating whether current MFA satisfies CJIS:
+
+- **AAL1** — single-factor or multi-factor, no cryptographic proof of possession required. Password-only or password + SMS OTP can satisfy AAL1.
+- **AAL2** — multi-factor required, with at least one factor providing cryptographic proof of authenticator possession. Examples: TOTP app + password, hardware OTP token + password, smart card + PIN. *This is the CJIS floor.*
+- **AAL3** — hardware-based cryptographic authenticator required, verifier impersonation resistance mandatory. Examples: PIV/CAC + PIN, FIDO2 hardware key + PIN. This exceeds CJIS requirements but is the strongest option.
+
+#### Implementation Guidance
+
+1. **Inventory current MFA implementations.** Map each CJI access path to the authenticator types in use. Classify each against NIST SP 800-63-3 AAL levels. Any path using SMS OTP, email codes, or voice callbacks as the second factor likely falls below AAL2.
+2. **Deploy AAL2-compliant authenticators.** TOTP apps (Authy, Google Authenticator, Microsoft Authenticator) meet AAL2 minimum. For stronger posture, deploy FIDO2/WebAuthn hardware keys or PIV/CAC cards, which meet AAL3 and provide phishing resistance.
+3. **Enforce MFA at the application layer.** MFA must be enforced at the point of CJI access, not just at the network perimeter. If a user authenticates with MFA to a VPN but then accesses the CJI application with only a password, the Advanced Authentication requirement is not satisfied for the CJI access.
+4. **Document authenticator classifications.** Maintain a record mapping each authenticator type to its AAL level, with references to NIST SP 800-63-3. This documentation is critical during audits.
+5. **Address the physically secure location exception.** Work with the subscribing agency to define which locations qualify as "physically secure" for CJIS purposes. Users at physically secure locations accessing CJI over local networks may have different authentication requirements — but this exception must be formally documented and approved by the agency.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **MFA configuration exports** from the identity provider showing enforcement for all CJI access paths
+- **Authenticator type inventory** classified by AAL level per NIST SP 800-63-3
+- **Authentication policy documentation** specifying CJIS Advanced Authentication requirements and which authenticator types are approved
+- **Authentication logs** demonstrating MFA enforcement for CJI access events
+- **Network diagrams** showing MFA enforcement points relative to CJI data flows
+- **Physically secure location documentation** if the exception is claimed, including agency approval
+
+#### Key Considerations
+
+- **SMS OTP is the most common gap.** Many organizations implemented SMS-based MFA to satisfy FedRAMP. For CJIS, SMS does not meet AAL2. This is often the single highest-effort remediation item in the IA-2 delta.
+- **SSO complicates the picture.** If users authenticate via SSO, the AAL level is determined by the IdP's authentication flow, not the downstream application. Verify the IdP enforces AAL2 for sessions that will access CJI.
+- **Conditional access policies.** Consider using conditional access to require stronger authenticators (AAL3/phishing-resistant) for CJI access while allowing AAL2 for non-CJI systems. This reduces friction while exceeding CJIS minimums for the most sensitive access.
+- **Grace period for migration.** If migrating from SMS OTP to AAL2-compliant authenticators, coordinate with the CSA on timeline expectations. An in-progress migration with a documented plan and deadline is better than no plan.
+
+---
+
+### IA-5 — Authenticator Management
+
+**NIST 800-53 Rev 5 Control:** Manage system authenticators by verifying identity during initial distribution, establishing initial authenticator content, ensuring sufficient strength, implementing administrative procedures, changing defaults, and protecting authenticator content from unauthorized disclosure and modification.
+
+**CJIS v6.0 Reference:** Section 5.6 (Identification and Authentication)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires authenticator management with organization-defined parameters for:
+
+- **Refresh/change period** — the organization defines the time period for changing or refreshing authenticators by type
+- **Change-triggering events** — the organization defines events that require authenticator changes (compromise, personnel change, etc.)
+
+For password-based authenticators specifically, FedRAMP High enhancement IA-5(1) requires password complexity and rotation, but the specific values (minimum length, composition rules, rotation period, history depth) are left to the organization. FedRAMP provides guidance through its parameter requirements but does not dictate exact values for all parameters.
+
+#### CJIS v6.0 Delta
+
+CJIS replaces the org-defined flexibility with prescriptive password parameters:
+
+- **Minimum 8 characters** — this is a floor, not a recommendation. Passwords shorter than 8 characters are non-compliant regardless of complexity.
+- **Complexity: 3 of 4 categories** — passwords must include characters from at least three of: uppercase letters, lowercase letters, numeric digits, special characters. This is more prescriptive than "enforce complexity" — it defines exactly what complexity means.
+- **90-day maximum lifetime** — passwords must be changed at least every 90 days. This is a hard ceiling — the organization cannot set a longer rotation period for CJI systems.
+- **10-password history** — users cannot reuse any of their last 10 passwords. This prevents trivial rotation patterns (Password1 → Password2 → Password1).
+
+**Why this matters — the 800-63B tension:** NIST SP 800-63B (Digital Identity Guidelines, 2017) explicitly *discourages* periodic password rotation, recommending instead that passwords be changed only when there is evidence of compromise. The reasoning is sound — forced rotation leads to weaker passwords (users increment a number, add a symbol) and does not measurably improve security when combined with breach detection.
+
+However, CJIS v6.0 requires 90-day rotation. For CJI systems, **CJIS requirements take precedence over 800-63B guidance.** This is not a contradiction in the framework — CJIS is a policy overlay with specific operational requirements for CJI, while 800-63B is a guideline. When they conflict, the more restrictive policy wins for the data type it governs. An auditor will not accept "we follow 800-63B instead" as a justification for skipping 90-day rotation on CJI systems.
+
+#### Implementation Guidance
+
+1. **Configure the identity provider** to enforce CJIS password parameters. Set minimum length to 8, require 3 of 4 character categories, enforce 90-day maximum age, and set password history to 10. These settings must be applied to all accounts that access CJI.
+2. **Verify SSO/federated IdP compliance.** If CJI access flows through SSO, the upstream IdP must enforce CJIS password policy. A downstream application cannot compensate for a weak upstream password policy.
+3. **Document the 800-63B deviation.** Since CJIS password requirements conflict with 800-63B guidance, document this explicitly: "CJI systems enforce 90-day password rotation per CJIS Security Policy v6.0 Section 5.6, which takes precedence over NIST SP 800-63B rotation guidance for systems processing CJI." This preempts questions about why your password policy appears to contradict NIST guidance.
+4. **Scope the policy to CJI systems.** Non-CJI systems can follow 800-63B guidance (no forced rotation). Apply CJIS password parameters only to systems and accounts that access CJI. This reduces user friction on non-CJI systems while maintaining compliance.
+5. **Monitor for weak rotation patterns.** Even with history enforcement, users may rotate through predictable patterns (Summer2026!, Fall2026!, Winter2027!). Consider implementing password similarity checks or a deny-list of common patterns if the IdP supports it.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Password policy configuration exports** from the IdP or directory service showing all four CJIS parameters (8-char minimum, 3-of-4 complexity, 90-day max age, 10-password history)
+- **Scope documentation** showing which systems/accounts are subject to CJIS password policy
+- **IdP configuration screenshots** demonstrating enforcement (not just documentation — actual system settings)
+- **Documentation mapping** CJIS password requirements to implemented configuration, line by line
+- **800-63B deviation justification** documenting why periodic rotation is enforced despite 800-63B guidance
+
+#### Key Considerations
+
+- **MFA does not replace password policy.** Even with AAL2 MFA (IA-2), CJIS still requires compliant password parameters. MFA and password policy are independent requirements — satisfying one does not exempt the other.
+- **Service accounts and API keys.** Clarify with the CSA whether service accounts that access CJI must follow the same password parameters. Service accounts typically use long-lived secrets or certificates, not user-interactive passwords. The 90-day rotation may apply differently to these.
+- **Password manager compatibility.** Organizations should encourage (or require) password managers to help users generate and manage complex passwords that change every 90 days. This mitigates the weak-rotation-pattern problem.
+- **Future CJIS updates.** CJIS v6.0 aligned with 800-53 Rev 5 but retained legacy password parameters from earlier versions. Future CJIS updates may reconcile with 800-63B guidance. Until then, enforce the current requirements.
