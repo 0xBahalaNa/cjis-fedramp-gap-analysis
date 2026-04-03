@@ -16,9 +16,9 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 | PE-17 | Physical/Environmental | Pending |
 | PS-3 | Personnel | Complete |
 | PS-6 | Personnel | Complete |
-| SC-12 | Encryption | Pending |
-| SC-13 | Encryption | Pending |
-| SC-28 | Encryption | Pending |
+| SC-12 | Encryption | Complete |
+| SC-13 | Encryption | Complete |
+| SC-28 | Encryption | Complete |
 
 ---
 
@@ -253,3 +253,183 @@ An auditor will expect to see:
 - **Service accounts and API keys.** Clarify with the CSA whether service accounts that access CJI must follow the same password parameters. Service accounts typically use long-lived secrets or certificates, not user-interactive passwords. The 90-day rotation may apply differently to these.
 - **Password manager compatibility.** Organizations should encourage (or require) password managers to help users generate and manage complex passwords that change every 90 days. This mitigates the weak-rotation-pattern problem.
 - **Future CJIS updates.** CJIS v6.0 aligned with 800-53 Rev 5 but retained legacy password parameters from earlier versions. Future CJIS updates may reconcile with 800-63B guidance. Until then, enforce the current requirements.
+
+---
+
+## Encryption
+
+Encryption is the most technically consequential delta between CJIS v6.0 and FedRAMP High. FedRAMP High requires encryption with FIPS-validated modules but allows the CSP to manage encryption keys. CJIS fundamentally changes the key management model: the law enforcement agency — not the CSP — must retain control over encryption keys for CJI. This has direct architectural implications for AWS KMS, storage service configuration, and cross-account access patterns.
+
+These three controls are tightly coupled:
+- **SC-12** governs *who manages the keys* and the key lifecycle
+- **SC-13** governs *what algorithms and key strengths* are acceptable
+- **SC-28** applies both to *data at rest*, requiring agency-managed keys for stored CJI
+
+### SC-12 — Cryptographic Key Establishment and Management
+
+**NIST 800-53 Rev 5 Control:** Establish and manage cryptographic keys when cryptography is employed within the system in accordance with organization-defined key management requirements.
+
+**CJIS v6.0 Reference:** Section 5.10.1 (Encryption)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires cryptographic key management using FIPS-validated cryptographic modules. The baseline defers to organization-defined parameters for:
+
+- **Key management requirements** — the organization defines requirements for key generation, distribution, storage, access, and destruction
+- **Key lifecycle management** — the organization determines rotation schedules, revocation procedures, and key recovery mechanisms
+
+Critically, FedRAMP High does not prescribe *who* manages the keys. A CSP using AWS-managed keys (e.g., `aws/s3`, `aws/ebs` default KMS keys) satisfies the FedRAMP baseline. The CSP manages the key lifecycle, the keys live in the CSP's infrastructure, and the customer trusts the CSP to handle key management properly. This is the standard shared responsibility model for encryption — the CSP provides the service, the customer uses it.
+
+#### CJIS v6.0 Delta
+
+CJIS breaks the standard shared responsibility model for key management:
+
+- **Agency must manage encryption keys** — the law enforcement agency, not the CSP, must retain control over key creation, distribution, storage, rotation, and revocation for keys protecting CJI. This is not a suggestion — it is a mandatory requirement that changes the fundamental trust model.
+- **Agency retains revocation authority** — the agency must have the ability to immediately revoke the CSP's access to CJI by revoking or rotating encryption keys. If the agency cannot unilaterally cut off access, the key management model does not satisfy CJIS.
+- **FIPS 140-2 or FIPS 140-3 validated modules** — all cryptographic modules in the key management chain must be FIPS validated. This aligns with FedRAMP but is explicitly stated in CJIS to ensure no gaps in the validation chain (e.g., a key wrapping layer that uses a non-validated module).
+- **Key lifecycle documentation** — the agency must have documented procedures for key creation, rotation, revocation, and destruction. These procedures must be agency-controlled, not just inherited from the CSP's default key management.
+
+**Why this matters:** A CSP with a FedRAMP High ATO is already using FIPS-validated encryption, but the keys are CSP-managed. Moving to agency-managed keys requires architectural changes — different KMS key types, different key policies, different IAM trust relationships. This is not a policy update; it is an infrastructure change that affects every service that encrypts CJI.
+
+#### Implementation Guidance — AWS KMS Architecture
+
+1. **Use customer-managed CMKs (not AWS-managed keys).** In AWS KMS, this means creating keys of type `CUSTOMER_MANAGED_CMK`, not using the default `aws/s3`, `aws/ebs`, or `aws/rds` service keys. Customer-managed CMKs allow the key policy to be configured with agency-specific access controls.
+2. **Configure key policies to restrict administrative access to agency IAM principals.** The KMS key policy is the primary access control. The `kms:*` administrative permissions must be granted only to IAM roles or users controlled by the agency — not to the CSP's account. This is the mechanism that gives the agency revocation authority.
+3. **Implement cross-account key sharing if the CSP operates in a separate AWS account.** The agency creates the CMK in their account and grants the CSP's account `kms:Encrypt`, `kms:Decrypt`, `kms:GenerateDataKey`, and `kms:ReEncrypt` permissions via the key policy. The agency retains `kms:*` (full administrative control). To revoke access, the agency removes the CSP's account from the key policy or disables the key.
+4. **Document the key lifecycle.** Create procedures for: key creation (who initiates, who approves), key rotation (automatic annual rotation via KMS, or manual rotation with a defined schedule), emergency key revocation (steps to disable or delete the CMK, expected impact on CJI availability), and key destruction (KMS scheduled deletion with a 7-30 day waiting period).
+5. **Verify FIPS 140-2/3 validation.** AWS KMS uses FIPS 140-2 Level 2 validated HSMs (certificate numbers are published in AWS documentation). Document the certificate numbers and validation status. If using CloudHSM for additional control, it provides FIPS 140-2 Level 3 validated modules.
+6. **Test revocation.** Periodically test the agency's ability to revoke CSP access by temporarily removing permissions from the key policy and verifying that CJI becomes inaccessible to CSP services. This test validates the revocation procedure and confirms no backdoor access paths exist.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Key management policy** documenting agency key control responsibilities, not delegated to the CSP
+- **KMS configuration exports** showing customer-managed CMKs (not AWS-managed default keys) for all CJI-related services
+- **Key policy documents** showing agency IAM principals have administrative access and the CSP has only usage permissions
+- **FIPS 140-2/3 validation certificates** for all cryptographic modules in the key management chain (AWS KMS HSM certificates)
+- **Key rotation configuration** showing automatic or scheduled rotation with documented procedures
+- **Emergency key revocation procedures** and test results demonstrating the agency can immediately cut off CSP access to CJI
+- **Cross-account architecture diagram** (if applicable) showing key ownership in the agency's account and usage grants to the CSP's account
+
+#### Key Considerations
+
+- **AWS-managed keys vs. customer-managed CMKs.** This is the single most important distinction. AWS-managed keys (the default when you enable encryption on S3, EBS, RDS, etc.) are created and managed by AWS in your account but you cannot modify their key policies. Customer-managed CMKs give you full control over the key policy — this is what CJIS requires. Migrating from AWS-managed to customer-managed CMKs may require re-encrypting existing data.
+- **CloudHSM as an alternative.** For agencies requiring FIPS 140-2 Level 3 (instead of Level 2), AWS CloudHSM provides dedicated HSMs. CloudHSM keys are managed entirely by the agency and never leave the HSM in plaintext. This exceeds CJIS requirements but adds operational complexity and cost.
+- **Key policy vs. IAM policy.** In AWS KMS, the key policy is the authoritative access control. An IAM policy alone cannot grant access to a CMK if the key policy does not allow it. Agencies should rely on key policies (not just IAM policies) to enforce access controls — this ensures that even a compromised IAM administrator cannot access the CMK without key policy changes.
+- **Relationship to SC-28.** SC-12 governs *who manages the keys*; SC-28 governs *where those keys are applied* (data at rest). An agency cannot satisfy SC-28 without first satisfying SC-12 — you cannot have agency-managed encryption at rest without agency-managed keys.
+- **Multi-region considerations.** If CJI is replicated across AWS regions, the CMK must be replicated or separate CMKs must be created in each region. AWS KMS multi-Region keys can simplify this, but each replica must have the same agency-controlled key policy.
+
+---
+
+### SC-13 — Cryptographic Protection
+
+**NIST 800-53 Rev 5 Control:** Determine the cryptographic uses required for the system; implement the required types of cryptography for each specified use.
+
+**CJIS v6.0 Reference:** Section 5.10.1 (Encryption)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires FIPS-validated cryptography for information protection. The baseline defers to organization-defined parameters for:
+
+- **Cryptographic uses** — the organization determines which data flows and storage locations require cryptographic protection
+- **Types of cryptography** — the organization selects the specific algorithms and key lengths, as long as they are FIPS-validated
+
+FedRAMP High does not prescribe minimum key lengths. An organization using AES-128 or AES-256 both satisfy the baseline, as long as the implementation uses a FIPS-validated module. Similarly, RSA-2048 and RSA-4096 are both acceptable. The baseline focuses on *validation status*, not *cryptographic strength* beyond what FIPS validation requires.
+
+#### CJIS v6.0 Delta
+
+CJIS adds prescriptive minimum key lengths on top of the FIPS validation requirement:
+
+- **128-bit minimum symmetric key length** — AES-128 is the floor. AES-192 and AES-256 exceed the requirement. Any symmetric cipher below 128-bit is non-compliant for CJI, regardless of FIPS validation status.
+- **2048-bit minimum asymmetric key length** — RSA-2048 is the floor. RSA-3072 and RSA-4096 exceed the requirement. For elliptic curve cryptography (ECC), the equivalent strength is approximately 224-bit ECC (NIST P-224 or higher), though NIST P-256 and P-384 are more commonly deployed.
+- **FIPS 140-2 or FIPS 140-3 validated modules** — same as FedRAMP, but CJIS explicitly states this to close any ambiguity. Every cryptographic operation protecting CJI (encryption, decryption, hashing, signing, key exchange) must use a FIPS-validated module.
+- **Applies to all CJI data states** — these minimums apply to CJI at rest, in transit, and in use. TLS configurations, disk encryption, database encryption, and any other cryptographic protection for CJI must meet these floors.
+
+**Why this matters:** Most modern AWS services default to AES-256 for symmetric encryption and support RSA-2048+ for asymmetric operations, so the key length minimums are usually satisfied by default configurations. The real risk is in edge cases: legacy TLS configurations that include weaker cipher suites, custom application-layer encryption that uses shorter keys, or third-party integrations that negotiate down to weaker algorithms. The audit obligation is to *prove* compliance across all CJI data paths, not just assume it.
+
+#### Implementation Guidance
+
+1. **Audit all encryption configurations across CJI data paths.** Inventory every service and component that encrypts CJI — storage (S3, EBS, RDS, DynamoDB), transit (TLS, VPN, API gateways), and application-layer encryption. Document the algorithm and key length for each.
+2. **Verify TLS configurations.** Ensure TLS configurations enforce FIPS-approved cipher suites with adequate key lengths. In AWS, this means using security policies that exclude weak ciphers. For ALB/NLB, use TLS security policies that enforce TLS 1.2+ with AES-128-GCM or AES-256-GCM cipher suites. Disable any cipher suite using keys below 128-bit or algorithms not on the FIPS-approved list.
+3. **Check storage encryption defaults.** AWS KMS defaults to AES-256 for symmetric CMKs. S3 SSE-KMS, EBS encryption, and RDS encryption all use AES-256 when configured with KMS CMKs. Verify this by checking the key spec on each CMK (`SYMMETRIC_DEFAULT` = AES-256-GCM in AWS KMS).
+4. **Review asymmetric key usage.** If using asymmetric keys for signing, key exchange, or certificate-based authentication, verify RSA-2048 minimum. For ECC, verify NIST P-256 or higher. Check TLS certificates, SSH keys, and any application-level digital signatures.
+5. **Document FIPS validation chain.** For each cryptographic module, record the CMVP certificate number, validation level, and the specific operations it covers. AWS publishes certificate numbers for KMS, CloudHSM, and other services in their FIPS compliance documentation.
+6. **Establish a cipher suite policy.** Create a documented list of approved cipher suites for CJI systems. Reference NIST SP 800-52 (TLS guidelines) for recommended cipher suites. Block any configuration change that introduces a cipher suite below the minimums.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Cryptographic inventory** mapping every CJI data path (at rest, in transit) to the algorithm and key length in use
+- **FIPS 140-2/3 validation certificates** for each cryptographic module, with CMVP certificate numbers
+- **TLS configuration exports** showing cipher suites, protocol versions, and key lengths for all endpoints handling CJI
+- **KMS key specifications** showing symmetric key algorithm (AES-256) and any asymmetric key specs (RSA-2048+)
+- **Cipher suite policy document** listing approved algorithms and minimum key lengths for CJI systems
+- **Configuration scan results** from tools like SSL Labs, `nmap --script ssl-enum-ciphers`, or AWS Config rules showing no weak ciphers in use
+
+#### Key Considerations
+
+- **AES-256 is the practical default.** AWS KMS symmetric keys are AES-256-GCM. S3, EBS, RDS, and DynamoDB encryption all use AES-256 when configured with KMS. The 128-bit floor is unlikely to be a problem in AWS-native services — the risk is in custom or third-party components.
+- **TLS is where gaps hide.** While storage encryption is typically AES-256, TLS configurations can inadvertently include weaker cipher suites from older security policies. Audit all load balancers, API gateways, and CloudFront distributions for cipher suite compliance.
+- **ECC equivalence.** CJIS specifies 2048-bit asymmetric minimum, which is RSA-specific. For ECC, use NIST-recommended equivalent strength: P-256 (128-bit security level) meets the minimum, P-384 (192-bit) exceeds it. Document the equivalence rationale.
+- **Relationship to SC-12 and SC-28.** SC-13 defines the *strength* of the cryptography; SC-12 defines *who manages* it; SC-28 defines *where it applies* for data at rest. All three must be satisfied together — using AES-256 (SC-13) with a CSP-managed key (fails SC-12) for data at rest (SC-28) would not satisfy CJIS.
+- **Crypto agility.** As NIST post-quantum cryptography standards mature, agencies should plan for algorithm migration. CJIS v6.0 does not yet require post-quantum algorithms, but awareness of the transition timeline is a forward-looking consideration.
+
+---
+
+### SC-28 — Protection of Information at Rest
+
+**NIST 800-53 Rev 5 Control:** Protect the confidentiality and integrity of information at rest.
+
+**CJIS v6.0 Reference:** Section 5.10.1 (Encryption)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires encryption at rest for information stored on the system. The baseline requires protection of both confidentiality and integrity, with the organization defining:
+
+- **Information requiring protection** — the organization determines which data at rest requires cryptographic protection
+- **Protection mechanisms** — the organization selects the specific encryption method (e.g., full-disk encryption, database-level encryption, object-level encryption)
+
+FedRAMP High is satisfied by enabling encryption on storage services using any FIPS-validated method. AWS-managed default encryption (e.g., S3 default encryption with `aws/s3` KMS key, EBS encryption with `aws/ebs` KMS key) satisfies the FedRAMP baseline. The key management is transparent to the customer — AWS creates, rotates, and manages the keys.
+
+#### CJIS v6.0 Delta
+
+CJIS adds a specific key ownership requirement that changes the entire encryption-at-rest architecture:
+
+- **Agency-managed CMK required** — all CJI at rest must be encrypted with a customer master key controlled by the law enforcement agency. CSP-managed default encryption keys (AWS-managed keys like `aws/s3`, `aws/ebs`) are **insufficient** — they do not give the agency control over the key.
+- **Agency retains key revocation authority** — the agency must be able to immediately render CJI inaccessible by disabling or deleting the CMK. This is the "kill switch" requirement — if the agency-CSP relationship ends or a breach occurs, the agency must be able to unilaterally cut off access to CJI by acting on the encryption key.
+- **Applies to all storage locations** — every location where CJI is stored must use the agency-managed CMK. This includes primary databases, backups, replicas, caches, logs containing CJI, temporary files, and any other persistent storage. A single S3 bucket using the default `aws/s3` key while others use the agency CMK creates a compliance gap.
+- **Encryption is not optional for CJI at rest** — unlike FedRAMP, which allows the organization to determine which data requires encryption at rest, CJIS mandates encryption for all CJI at rest with no exceptions.
+
+**Why this matters:** This is the control that makes the PS-3 encryption safe harbor work. If CJI is encrypted at rest with agency-managed keys and the CSP cannot access those keys, CSP personnel may be outside the scope of fingerprint-based background checks (PS-3). But this only works if the encryption implementation is airtight — agency-managed keys, no CSP access to key administrative operations, and verifiable key revocation capability. SC-28 is where the rubber meets the road for the agency-managed encryption architecture.
+
+#### Implementation Guidance — AWS Storage Services
+
+1. **Create a dedicated CMK for CJI encryption.** In the agency's AWS account (or in a dedicated key management account), create a customer-managed symmetric CMK. Set the key policy to grant administrative access (`kms:*`) only to agency IAM principals. Grant the CSP's account or roles only usage permissions (`kms:Encrypt`, `kms:Decrypt`, `kms:GenerateDataKey`, `kms:DescribeKey`).
+2. **Configure S3 bucket encryption.** For S3 buckets containing CJI, set the default encryption to use the agency-managed CMK (SSE-KMS with the CMK ARN). Apply a bucket policy that denies `s3:PutObject` without the `x-amz-server-side-encryption-aws-kms-key-id` header matching the CMK ARN. This prevents objects from being uploaded with the wrong key.
+3. **Configure EBS volume encryption.** For EC2 instances processing CJI, enable EBS encryption using the agency-managed CMK. Set the default EBS encryption key in the account to the agency CMK. Existing volumes encrypted with AWS-managed keys must be re-encrypted — create a snapshot, copy the snapshot with the new CMK, and create a new volume from the re-encrypted snapshot.
+4. **Configure RDS encryption.** RDS instances storing CJI must be encrypted with the agency-managed CMK. RDS encryption is set at instance creation and cannot be changed — if an existing instance uses the wrong key, the migration path is: snapshot → copy snapshot with agency CMK → restore to new instance from re-encrypted snapshot.
+5. **Configure DynamoDB encryption.** For DynamoDB tables containing CJI, set encryption to use the agency-managed CMK (not the default `AWS_OWNED_CMK` or `AWS_MANAGED_CMK`).
+6. **Address backup encryption.** AWS Backup, S3 replication, RDS automated backups, and EBS snapshots must all use the agency-managed CMK. Verify that backup configurations inherit the source encryption key or are explicitly configured to use the agency CMK.
+7. **Inventory all CJI storage locations.** Create and maintain a complete inventory of every storage location containing CJI, mapped to the encryption key protecting it. Include primary storage, backups, replicas, logs, and caches. This inventory is critical for audit evidence and for verifying that no CJI exists outside the agency-managed CMK's protection.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Storage encryption configuration** for every service containing CJI, showing the agency-managed CMK ARN/ID (not AWS-managed key ARNs)
+- **KMS key policy** showing agency-only administrative access and CSP limited to usage permissions
+- **CJI storage inventory** mapping every storage location to its encryption key — demonstrating complete coverage
+- **Key rotation configuration and logs** showing the CMK is rotated per agency policy
+- **Key revocation test results** demonstrating that disabling the CMK renders CJI inaccessible across all storage locations
+- **Bucket/volume/instance encryption configuration exports** from AWS CLI or Config showing encryption settings for each resource
+- **Backup encryption verification** showing backups, snapshots, and replicas use the agency-managed CMK
+
+#### Key Considerations
+
+- **Migration from AWS-managed to customer-managed CMKs.** This is often the highest-effort item. S3 objects can be re-encrypted in place using S3 Batch Operations with a copy operation specifying the new CMK. EBS volumes and RDS instances require snapshot-copy-restore workflows. Plan for downtime and data validation during migration.
+- **The encryption safe harbor for PS-3.** SC-28 with agency-managed keys is the foundation of the encryption safe harbor referenced in PS-3 (Personnel Screening). If CSP personnel cannot access the CMK, they cannot decrypt CJI, and they may be outside the scope of fingerprint-based background checks. But this only holds if the key policy is airtight — any administrative access by CSP IAM principals undermines the safe harbor.
+- **Cost implications.** Customer-managed CMKs in AWS KMS cost $1/month per key plus per-request charges. CloudHSM (if used for FIPS 140-2 Level 3) costs significantly more (~$1.50/hour per HSM). The cost is modest relative to the compliance benefit, but should be budgeted.
+- **Logging and monitoring.** Enable CloudTrail logging for all KMS API calls related to the CJI CMK. Monitor for unexpected `kms:DisableKey`, `kms:ScheduleKeyDeletion`, or key policy changes. Alarm on any CMK administrative action not initiated by an authorized agency principal.
+- **Relationship to SC-12.** SC-28 cannot be satisfied without SC-12. The agency-managed CMK requirement (SC-28) depends on agency key management (SC-12). These controls must be implemented together — you cannot have agency-managed encryption at rest without agency-managed key lifecycle procedures.
