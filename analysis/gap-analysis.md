@@ -12,7 +12,7 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 | IA-2 | Authentication | Complete |
 | IA-5 | Authentication | Complete |
 | IR-6 | Incident Response | Pending |
-| MP-6 | Media Protection | Pending |
+| MP-6 | Media Protection | Complete |
 | PE-17 | Physical/Environmental | Pending |
 | PS-3 | Personnel | Complete |
 | PS-6 | Personnel | Complete |
@@ -433,3 +433,74 @@ An auditor will expect to see:
 - **Cost implications.** Customer-managed CMKs in AWS KMS cost $1/month per key plus per-request charges. CloudHSM (if used for FIPS 140-2 Level 3) costs significantly more (~$1.50/hour per HSM). The cost is modest relative to the compliance benefit, but should be budgeted.
 - **Logging and monitoring.** Enable CloudTrail logging for all KMS API calls related to the CJI CMK. Monitor for unexpected `kms:DisableKey`, `kms:ScheduleKeyDeletion`, or key policy changes. Alarm on any CMK administrative action not initiated by an authorized agency principal.
 - **Relationship to SC-12.** SC-28 cannot be satisfied without SC-12. The agency-managed CMK requirement (SC-28) depends on agency key management (SC-12). These controls must be implemented together — you cannot have agency-managed encryption at rest without agency-managed key lifecycle procedures.
+
+---
+
+## Media Protection
+
+### MP-6 — Media Sanitization
+
+**NIST 800-53 Rev 5 Control:** Sanitize organization-defined system media prior to disposal, release out of organizational control, or release for reuse using organization-defined sanitization techniques and procedures; employ sanitization mechanisms with the strength and integrity commensurate with the security category or classification of the information.
+
+**CJIS v6.0 Reference:** Section 5.8 (Media Protection)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires media sanitization before disposal or reuse, but defers heavily to organization-defined parameters for:
+
+- **System media scope** — the organization defines which media types are subject to sanitization before disposal, release, or reuse
+- **Sanitization techniques and procedures** — the organization selects the sanitization methods, as long as the strength is commensurate with the security category of the information
+
+FedRAMP High requires sanitization that is proportional to the data classification, and it references NIST SP 800-88 (Guidelines for Media Sanitization) as guidance. However, the baseline does not mandate specific sanitization methods per media type. An organization could clear, purge, or destroy media — the choice is left to the organization based on their risk assessment and the information's sensitivity. There is no explicit requirement for witnessed destruction or per-event sanitization records beyond what the organization defines in its own procedures.
+
+#### CJIS v6.0 Delta
+
+CJIS replaces the organizational flexibility with prescriptive sanitization requirements tied to media type:
+
+- **NIST 800-88 Purge level minimum for electronic media** — electronic media containing CJI must be sanitized to at least the Purge level as defined in NIST SP 800-88. Purge renders data recovery infeasible using state-of-the-art laboratory techniques. Clear level (which protects against simple non-invasive recovery) is insufficient for CJI. This means standard "quick format" or single-pass overwrite may not satisfy the requirement — the method must achieve Purge-level assurance.
+- **Physical destruction when Purge is not achievable** — media that cannot be reliably sanitized to Purge level must be physically destroyed. Approved destruction methods include shredding, incineration, and degaussing to the point of destruction (for magnetic media). This applies to damaged media, media with firmware-level storage (SSDs with wear-leveling that cannot guarantee complete overwrite), and any media where Purge-level sanitization cannot be verified.
+- **Paper and microform: cross-cut shred or incinerate** — paper documents and microform (microfiche, microfilm) containing CJI must be cross-cut shredded or incinerated. Strip-cut shredding is insufficient — cross-cut produces particles small enough to prevent reconstruction. The shred size should align with NSA/CSS EPL-listed shredder specifications for classified material handling (typically 1mm x 5mm or smaller), though CJIS does not mandate a specific particle size.
+- **Witnessed or verified sanitization** — sanitization events must be witnessed by an authorized individual or verified through testing. "Verified" means the sanitization result is confirmed (e.g., attempting data recovery on a sanitized drive to confirm data is irrecoverable). This is more rigorous than FedRAMP's general requirement, which does not mandate per-event witnessing.
+- **Sanitization records** — each sanitization event must be documented with: media identifier (serial number, asset tag), media type, sanitization method used, date of sanitization, and identity of the person who performed and witnessed/verified the sanitization. These records must be retained per the organization's records retention policy.
+
+**Why this matters:** A CSP operating under FedRAMP High likely has a media sanitization procedure, but it may rely on the CSP's own risk assessment to determine methods per media type. CJIS removes that discretion for CJI media — the methods are prescribed, destruction is mandatory in specific cases, and every event must be documented. For CSPs using cloud-only infrastructure (no physical media they control), the primary impact is on the agency side and on any hybrid components. For CSPs managing physical infrastructure, this affects hardware lifecycle management, decommissioning procedures, and vendor relationships for destruction services.
+
+#### Implementation Guidance
+
+1. **Create a CJI media sanitization matrix.** Map each media type to the approved sanitization method:
+
+   | Media Type | Sanitization Method | Standard |
+   |------------|-------------------|----------|
+   | HDD (magnetic) | Purge (secure erase / cryptographic erase) or physical destruction (degauss + shred) | NIST 800-88 Purge |
+   | SSD / Flash | Cryptographic erase (if supported with verification) or physical destruction (shred/incinerate) | NIST 800-88 Purge |
+   | Magnetic tape | Degauss to point of destruction or incinerate | NIST 800-88 Destroy |
+   | Optical media (CD/DVD) | Physical destruction (shred/incinerate) | NIST 800-88 Destroy |
+   | Paper documents | Cross-cut shred or incinerate | CJIS v6.0 §5.8 |
+   | Microform | Cross-cut shred or incinerate | CJIS v6.0 §5.8 |
+   | Mobile devices | Cryptographic erase + factory reset (if verified) or physical destruction | NIST 800-88 Purge |
+
+2. **Implement witnessed destruction procedures.** Designate authorized witnesses for sanitization events. For in-house sanitization, the witness must be present during the process. For third-party destruction vendors, require certificates of destruction that include media serial numbers, destruction method, date, and witness signatures.
+3. **Establish a sanitization log.** Create a standardized log template capturing: media identifier, media type, data classification (CJI), sanitization method, date/time, operator name, witness/verifier name, and verification result (pass/fail). Retain logs per the agency's records retention requirements.
+4. **Address SSD sanitization challenges.** SSDs with wear-leveling algorithms may retain data in overprovisioned cells even after a standard wipe. For SSDs containing CJI, cryptographic erase (where the encryption key is destroyed, rendering all data irrecoverable) is the preferred Purge method. If the SSD does not support verified cryptographic erase, physical destruction is required. Document the SSD manufacturer's sanitization capabilities and verification methods.
+5. **Contract requirements for third-party destruction.** If using a third-party media destruction vendor, the contract must require: NIST 800-88 compliance, certificates of destruction per media item, chain-of-custody documentation during transport, and the right to audit the vendor's destruction process. The vendor's employees who handle CJI media may be subject to CJIS personnel requirements (PS-3, PS-6) if they have access to unencrypted CJI during the destruction process.
+6. **Cloud-specific considerations.** For CJI stored entirely in AWS, the CSP (AWS) handles physical media sanitization under their shared responsibility model. AWS publishes media sanitization procedures in their SOC 2 reports and follows NIST 800-88 guidelines. The agency should obtain AWS's media sanitization attestation and verify it meets CJIS Purge/Destroy requirements. For any agency-controlled media (laptops, removable drives, backup tapes), the agency is directly responsible for CJIS-compliant sanitization.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Media sanitization policy** specific to CJI, referencing NIST 800-88 and CJIS v6.0 requirements
+- **Sanitization matrix** mapping media types to approved methods (as described above)
+- **Sanitization logs** with media identifiers, methods, dates, and witness signatures for each event
+- **Certificates of destruction** from third-party destruction vendors, per media item
+- **Verification records** showing sanitization effectiveness was confirmed (e.g., recovery attempt results)
+- **Third-party vendor contracts** with NIST 800-88 compliance requirements and audit rights
+- **CSP media sanitization attestation** (for cloud-hosted CJI) — AWS SOC 2 or equivalent documentation showing media sanitization procedures meet NIST 800-88 Purge/Destroy levels
+
+#### Key Considerations
+
+- **Cloud vs. on-premises distinction.** For fully cloud-hosted CJI, the physical media sanitization responsibility falls primarily on the CSP (AWS). The agency's responsibility shifts to: (1) obtaining the CSP's sanitization attestation, (2) verifying the attestation meets CJIS requirements, and (3) sanitizing any agency-controlled endpoints or removable media. This does not eliminate the requirement — it shifts where it applies.
+- **SSD overprovisioning is the biggest technical risk.** Standard overwrite methods that work on HDDs do not guarantee complete data removal on SSDs due to wear-leveling and overprovisioned NAND cells. Cryptographic erase (ATA Secure Erase Enhanced or NVMe Format with crypto erase) is the only reliable Purge method for SSDs. If the SSD does not support verified cryptographic erase, physical destruction is the only compliant option.
+- **Degaussing does not work on SSDs.** Degaussing is effective only on magnetic media (HDDs, tapes). SSDs use NAND flash storage, which is not affected by magnetic fields. An organization that includes "degaussing" as a sanitization method for all media types has a gap — SSDs must be handled separately.
+- **Chain of custody for off-site destruction.** If media is transported to a destruction facility, document the chain of custody from the point of removal to the point of destruction. Any gap in the chain creates a period where CJI media is unaccounted for — this is an audit finding.
+- **Relationship to SC-28 (encryption safe harbor).** If CJI at rest is encrypted with agency-managed keys (SC-28), cryptographic erase becomes a stronger sanitization option — destroying the encryption key renders the data irrecoverable regardless of whether the physical media is sanitized. This is another benefit of the agency-managed key architecture. However, cryptographic erase alone may not satisfy CJIS if the agency or CSA requires physical destruction for certain media types — confirm with the CSA.
