@@ -6,9 +6,9 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 
 | Control | Category | Status |
 |---------|----------|--------|
-| AC-2 | Access Control | Pending |
+| AC-2 | Access Control | Complete |
 | AT-2 | Training | Pending |
-| AU-6 | Audit | Pending |
+| AU-6 | Audit | Complete |
 | IA-2 | Authentication | Complete |
 | IA-5 | Authentication | Complete |
 | IR-6 | Incident Response | Pending |
@@ -504,3 +504,142 @@ An auditor will expect to see:
 - **Degaussing does not work on SSDs.** Degaussing is effective only on magnetic media (HDDs, tapes). SSDs use NAND flash storage, which is not affected by magnetic fields. An organization that includes "degaussing" as a sanitization method for all media types has a gap — SSDs must be handled separately.
 - **Chain of custody for off-site destruction.** If media is transported to a destruction facility, document the chain of custody from the point of removal to the point of destruction. Any gap in the chain creates a period where CJI media is unaccounted for — this is an audit finding.
 - **Relationship to SC-28 (encryption safe harbor).** If CJI at rest is encrypted with agency-managed keys (SC-28), cryptographic erase becomes a stronger sanitization option — destroying the encryption key renders the data irrecoverable regardless of whether the physical media is sanitized. This is another benefit of the agency-managed key architecture. However, cryptographic erase alone may not satisfy CJIS if the agency or CSA requires physical destruction for certain media types — confirm with the CSA.
+
+---
+
+## Audit and Accountability
+
+### AU-6 — Audit Record Review, Analysis, and Reporting
+
+**NIST 800-53 Rev 5 Control:** Review and analyze system audit records for indications of inappropriate or unusual activity and the potential impact of the inappropriate or unusual activity; report findings to designated personnel or roles; and adjust the level of audit record review, analysis, and reporting when there is a change in risk.
+
+**CJIS v6.0 Reference:** Section 5.4 (Auditing and Accountability)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires review and analysis of audit records at an organization-defined frequency. The baseline defers to organization-defined parameters for:
+
+- **Review frequency** (au-06_odp.01) — the organization defines how often audit records are reviewed and analyzed. FedRAMP High typically sets this to "at least weekly," but the specific cadence and scope are left to the organization's discretion.
+- **Types of inappropriate or unusual activity** (au-06_odp.02) — the organization defines what constitutes suspicious activity worth reviewing (failed logins, privilege escalation attempts, after-hours access, etc.)
+- **Reporting recipients** (au-06_odp.03) — the organization defines who receives the findings from audit record reviews
+
+FedRAMP High does not prescribe which specific events must be included in each review cycle, nor does it mandate a minimum retention period for audit logs beyond compliance with applicable records management requirements (typically NARA schedules). The organization determines the scope and depth of each review based on its own risk assessment.
+
+#### CJIS v6.0 Delta
+
+CJIS narrows the flexibility in two areas: review cadence and log retention.
+
+- **Weekly audit log review for CJI events** — CJIS mandates weekly review of audit logs related to CJI access and transactions. This is prescriptive, not organization-defined. While FedRAMP High often sets a similar "at least weekly" cadence, CJIS specifically scopes the weekly review to CJI-related events: access to CJI, modification of CJI records, deletion of CJI, queries against CJI databases, and export or dissemination of CJI. The review cannot be a general-purpose log scan that incidentally covers CJI — it must explicitly target CJI event categories.
+- **1-year minimum retention for CJI audit logs** — audit logs related to CJI access and transactions must be retained for a minimum of 1 year. FedRAMP defers to NARA records schedules, which may specify different retention periods depending on the record type and system. CJIS sets a floor of 1 year regardless of what NARA schedules would otherwise require. For CJI-related logs, whichever retention period is longer (NARA or CJIS) applies.
+- **Prescriptive event scope** — the types of events that must be reviewed are defined by CJIS, not left to the organization. At minimum, the review must cover: successful and failed authentication attempts to CJI systems, CJI record access (read/query), CJI record modification (create/update/delete), CJI export or dissemination, privilege changes for CJI-authorized accounts, and administrative actions on CJI systems.
+
+**Why this matters:** A CSP operating under FedRAMP High likely has a weekly log review process, but it may be scoped to infrastructure-level events (firewall logs, system alerts, vulnerability scan results). CJIS requires the review to explicitly cover application-layer CJI access events, which may not be captured by infrastructure-focused SIEM rules. The gap is often not in the review process itself but in the event coverage: are CJI access queries, record modifications, and dissemination events being logged, ingested into the SIEM, and included in the weekly review? The 1-year retention requirement may also exceed what the organization currently retains for application-level logs.
+
+#### Implementation Guidance
+
+1. **Define CJI audit event categories.** Create a documented list of event types that constitute "CJI-related audit events" for your environment. At minimum, include: authentication to CJI systems (success and failure), CJI record access/query, CJI record create/update/delete, CJI export or download, privilege changes on CJI-authorized accounts, and administrative actions on CJI infrastructure. Map each event category to the specific log source that captures it (application logs, database audit logs, CloudTrail, etc.).
+2. **Configure application-layer audit logging.** Infrastructure-level logging (CloudTrail, VPC Flow Logs) captures API calls and network traffic but does not capture application-level CJI access. Ensure the application that manages CJI generates audit logs for record-level access events. For database-hosted CJI, enable database audit logging (e.g., RDS audit logs, DynamoDB Streams, or Aurora activity streams) to capture queries against CJI tables.
+3. **Implement weekly review workflow.** Configure the SIEM or log management platform to generate a weekly CJI audit review report. The report should aggregate CJI-related events by category, flag anomalies (unusual access volumes, after-hours access, access by accounts not on the CJI-authorized roster, failed authentication spikes), and require reviewer sign-off. Assign a specific individual or team responsible for the weekly review, with a backup reviewer for coverage.
+
+   **AWS Implementation:** Use CloudWatch Logs Insights or Athena queries against CloudTrail logs in S3 to generate weekly CJI event summaries. Create saved queries for each CJI event category. Use Amazon Security Lake or a third-party SIEM (Splunk, Elastic) to centralize application-level and infrastructure-level logs into a single review workflow. Schedule weekly CloudWatch alarms or EventBridge rules to trigger review report generation.
+
+4. **Set log retention to 1 year minimum.** Configure log storage retention to meet the 1-year floor. For CloudWatch Logs, set the retention period to at least 365 days on all log groups containing CJI audit events. For logs stored in S3 (CloudTrail, application logs), configure S3 Lifecycle rules to retain objects for at least 1 year before transitioning to archival storage (Glacier) or deletion. If using a SIEM, verify the SIEM's hot/warm/cold storage tiers retain CJI logs for at least 1 year in a searchable state.
+5. **Document escalation procedures.** Define what happens when the weekly review identifies an anomaly. Establish escalation paths: reviewer identifies anomaly, notifies the CJIS Systems Officer (CSO) and the incident response team, initiates investigation, and documents resolution. The escalation procedure should integrate with the CJIS incident reporting chain (IR-6) for events that constitute a security incident.
+6. **Integrate AU-6 with AC-2.** The weekly audit review should cross-reference CJI access events against the current CJI-authorized user roster (AC-2). Any CJI access by an account not on the authorized roster is an immediate escalation. This creates a continuous assurance loop: AU-6 detects who accessed CJI, AC-2 verifies who should have accessed CJI.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Weekly audit review reports** with reviewer signature or acknowledgment, covering all CJI event categories
+- **CJI audit event category definition** documenting which events are in scope for the weekly review
+- **Log retention configuration** showing 1-year minimum for all CJI-related log sources (CloudWatch Logs retention settings, S3 Lifecycle policies, SIEM retention configuration)
+- **SIEM rules or queries** used for the CJI audit review, demonstrating coverage of all required event categories
+- **Sample review reports** demonstrating completeness (all event categories covered, anomalies flagged, reviewer acknowledgment)
+- **Escalation records** showing how anomalous findings were handled, investigated, and resolved
+- **Log source inventory** mapping each CJI event category to its log source, demonstrating that all CJI access paths are captured
+
+#### Key Considerations
+
+- **Application-layer logging is the gap.** Most FedRAMP-authorized CSPs have strong infrastructure logging (CloudTrail, VPC Flow Logs, GuardDuty). The gap is typically at the application layer: does the application log who queried which CJI records, who exported data, who modified records? If the application treats CJI as opaque data and only the database logs queries, ensure database audit logging is enabled and feeding into the SIEM.
+- **"Weekly" means every 7 days, not "sometime this week."** Establish a consistent review day and document it. If a review is missed due to personnel absence, the backup reviewer must complete it. An auditor will check for gaps in the weekly review cadence, and a missing week is a finding.
+- **Retention cost planning.** A year of application-level audit logs can be significant in volume, especially for high-traffic CJI systems. Plan storage costs accordingly. Use tiered storage (S3 Intelligent-Tiering or Glacier after 90 days) to manage cost while maintaining the 1-year retention requirement. Logs must remain searchable for the review process, so purely archival storage (Glacier Deep Archive) may not satisfy the requirement if logs need to be recalled for investigation.
+- **Relationship to AU-6 and AC-2 feedback loop.** AU-6 weekly reviews should flag any CJI access by accounts that are not on the current AC-2 authorized roster. Conversely, AC-2 quarterly reviews should use AU-6 data (last access date, access frequency) to inform need-to-know determinations. If an account has not accessed CJI in 90 days, the quarterly reviewer should question whether continued access is justified.
+- **FedRAMP continuous monitoring overlap.** FedRAMP continuous monitoring (ConMon) already requires ongoing log review. The CJIS delta is not a new process but a tighter scope and cadence for CJI events within the existing ConMon program. Frame it as a CJI-specific layer on top of ConMon, not a separate program.
+
+---
+
+## Access Control
+
+### AC-2 — Account Management
+
+**NIST 800-53 Rev 5 Control:** Define and document account types; assign account managers; specify authorized users, group and role membership, and access authorizations for each account; review accounts for compliance with account management requirements at an organization-defined frequency; and align account management processes with personnel termination and transfer processes.
+
+**CJIS v6.0 Reference:** Section 5.5 (Access Control)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires comprehensive account lifecycle management, but defers to organization-defined parameters for several key elements:
+
+- **Account review frequency** (ac-02_odp.10) — the organization defines how often accounts are reviewed for compliance with account management requirements. FedRAMP High typically sets this to "at least annually."
+- **Notification timelines** — the organization defines the time periods for notifying account managers when accounts are no longer required (ac-02_odp.06), when users are terminated or transferred (ac-02_odp.07), and when system usage or need-to-know changes (ac-02_odp.08).
+- **Account creation prerequisites** — the organization defines the prerequisites and criteria for group and role membership (ac-02_odp.01) and the personnel who must approve account creation (ac-02_odp.03).
+
+FedRAMP High satisfies the account management baseline with annual access reviews, organization-defined notification timelines, and standard account lifecycle procedures. The baseline focuses on the *existence* of account management processes rather than prescribing specific cadences for CJI or other data-type-specific reviews.
+
+#### CJIS v6.0 Delta
+
+CJIS tightens the review cadence and adds immediate-action requirements for CJI-authorized accounts:
+
+- **Quarterly access reviews** — accounts authorized to access CJI must be reviewed every 90 days, not annually. Each review must verify: (1) the individual still has a legitimate need-to-know for CJI access, (2) the individual's privilege level remains appropriate for their current role, and (3) all prerequisite requirements remain current (fingerprint-based background check per PS-3, signed CJIS Security Addendum per PS-6, security awareness training per AT-2). A quarterly review that only checks "is this account still active?" is insufficient. The review must validate the full chain of CJI access authorization.
+- **Immediate revocation upon determination** — when it is determined that an individual no longer requires CJI access (role change, transfer, separation, need-to-know expiration), access must be revoked immediately. "Immediately" means as soon as the determination is made, not at the next quarterly review cycle or at the end of a grace period. The quarterly review is the backstop that catches anything the real-time revocation process missed. It is not a substitute for prompt action when access should be revoked.
+- **Need-to-know validation** — each CJI access authorization must be tied to a specific, documented need-to-know. Generic justifications ("user needs system access for their job") are insufficient. The need-to-know must reference the individual's role, the specific CJI data sets they require, and the business function that requires CJI access. This is more granular than FedRAMP's general "valid access authorization" requirement.
+- **Prerequisite chain validation** — CJI access authorization depends on other CJIS controls being satisfied. During each quarterly review, the reviewer must verify that the individual's fingerprint-based background check (PS-3) is current, their CJIS Security Addendum (PS-6) is on file and current, and their CJIS security awareness training (AT-2) is not expired. If any prerequisite is out of compliance, CJI access must be suspended until the prerequisite is remediated. This creates a dependency chain that annual reviews do not enforce with the same rigor.
+
+**Why this matters:** This is where IGA (Identity Governance and Administration) meets law enforcement data protection. A CSP with an annual access review process meets FedRAMP but leaves a 12-month window where stale or inappropriate CJI access persists undetected. In a law enforcement context, that window is unacceptable: personnel transfer between departments, officers are placed on administrative leave, contractor engagements end, and interagency agreements expire. Quarterly reviews with immediate revocation shrink the maximum exposure window to 90 days (for cases the real-time process misses) rather than 365 days.
+
+#### Implementation Guidance
+
+1. **Establish the CJI-authorized user roster.** Maintain a definitive list of all accounts authorized to access CJI, including: individual name, account identifier, role, assigned privilege level, need-to-know justification, date of last PS-3 background check, date of last PS-6 Security Addendum execution, and date of last AT-2 CJIS security awareness training. This roster is the single source of truth for CJI access authorization and the primary input for quarterly reviews.
+
+   **AWS Implementation:** Use AWS IAM Identity Center (SSO) to manage CJI-authorized users in a dedicated permission set or group. Tag IAM roles and policies associated with CJI access with a `cji-authorized: true` tag. Use IAM Access Analyzer to identify which principals can reach CJI resources (S3 buckets, RDS instances, DynamoDB tables). Generate the roster by querying IAM Identity Center group membership cross-referenced with IAM Access Analyzer findings.
+
+2. **Build the quarterly review workflow.** Create a structured review process that runs every 90 days:
+   - **Generate the review report.** Pull the current CJI-authorized roster with each user's role, last access date (from AU-6 audit logs), background check status (PS-3), Security Addendum status (PS-6), and training status (AT-2).
+   - **Assign reviewers.** Each account should be reviewed by the user's manager or the data owner responsible for the CJI data set the user accesses. Reviewers must not review their own access.
+   - **Certify or revoke.** For each account, the reviewer must certify continued need-to-know and appropriate privilege level, or flag the account for revocation. Certifications must include a specific justification, not a blanket approval.
+   - **Execute revocation.** Accounts flagged for revocation must be disabled within the review cycle. Track revocation completion as part of the review record.
+   - **Document results.** The completed review report, with certifications and revocations, must be retained as audit evidence.
+
+3. **Integrate real-time revocation triggers.** Connect CJI access revocation to HR and personnel processes so that access is revoked immediately upon:
+   - Employee termination or resignation
+   - Role change to a position that does not require CJI access
+   - Placement on administrative leave (depending on agency policy)
+   - Expiration of contractor engagement or interagency agreement
+   - Failure to complete required PS-3 rescreening, PS-6 re-execution, or AT-2 training renewal
+
+   **AWS Implementation:** Use SCIM provisioning between the HR system (or IdP) and IAM Identity Center for automated deprovisioning. Configure Lambda functions triggered by EventBridge rules to monitor for group membership changes and log deprovisioning events. For immediate revocation, disabling the user in IAM Identity Center terminates active sessions and blocks new authentication.
+
+4. **Cross-reference with AU-6 audit data.** Use CJI access log data from the weekly AU-6 reviews to inform quarterly AC-2 reviews. Specifically: identify accounts that have not accessed CJI in the past 90 days (candidates for access removal under least privilege), identify accounts with unusual access patterns (potential indicator of compromised credentials or misuse), and verify that all CJI access events in the audit logs were performed by accounts on the authorized roster.
+5. **Document the need-to-know justification standard.** Define what constitutes a valid need-to-know justification for CJI access in your environment. Example structure: "[Role] requires access to [specific CJI data set] to perform [specific business function]." Example: "Case analyst requires access to NCIC query results to perform background investigations for sworn officer applicants." Prohibit generic justifications that do not reference a specific data set or business function.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Quarterly access review reports** with reviewer certifications for each CJI-authorized account, completed every 90 days
+- **CJI-authorized user roster** with roles, privilege levels, and need-to-know justifications for each account
+- **Prerequisite compliance records** cross-referencing each CJI-authorized user with their PS-3 background check status, PS-6 Security Addendum status, and AT-2 training status
+- **Access revocation records** showing accounts removed during or between quarterly reviews, with dates and reasons
+- **Evidence of immediate revocation** for personnel separations, role changes, or prerequisite expirations (timestamps showing revocation within hours, not days or weeks)
+- **Access review policy** documenting the quarterly cadence, reviewer assignment, certification requirements, and revocation procedures
+- **IAM configuration** showing CJI access groups, permission sets, and the mechanism for enforcing access revocation (IAM Identity Center group removal, policy detachment, etc.)
+
+#### Key Considerations
+
+- **Quarterly reviews are the backstop, not the primary control.** The real-time revocation process (integrated with HR, provisioning/deprovisioning workflows) is the primary control. Quarterly reviews catch what the real-time process missed: role changes that were not communicated, contractor engagements that expired without notification, training that lapsed without triggering deprovisioning. If the quarterly review is catching a high volume of stale accounts, the real-time process needs improvement.
+- **Prerequisite chain creates cascading revocations.** If a user's PS-3 background check expires and rescreening is not completed in time, their CJI access must be suspended regardless of their role or need-to-know. This means the quarterly review must check not just "does this person still need access?" but also "are all their prerequisites still current?" A lapsed training certificate (AT-2) or overdue background check (PS-3) is an access revocation trigger, even if the person's job function has not changed.
+- **Separation of review duties.** Users must not certify their own CJI access. Managers reviewing their direct reports is standard practice, but consider whether a second-level review (data owner or CJIS Systems Officer) is warranted for privileged accounts (database administrators, system administrators with access to unencrypted CJI). This mirrors the dual-approval patterns common in IGA platforms.
+- **Automation reduces review burden.** Manual quarterly reviews for a large user population (hundreds of officers across multiple agencies) become unsustainable. Automate the report generation, prerequisite compliance checking, and last-access-date calculation. Reserve human judgment for the certification decision itself: "Does this person still need this level of CJI access?"
+- **Relationship to PS-3 and PS-6.** AC-2 quarterly reviews enforce the ongoing validity of PS-3 (personnel screening) and PS-6 (access agreements). A person who was properly screened and signed the Security Addendum at onboarding may fall out of compliance if rescreening is overdue or the addendum terms have changed. AC-2 is the recurring checkpoint that verifies the entire access authorization chain remains intact.
+- **Relationship to AU-6.** AC-2 and AU-6 form a feedback loop. AU-6 weekly reviews detect who is actually accessing CJI. AC-2 quarterly reviews verify who is authorized to access CJI. Discrepancies between the two (access by unauthorized accounts, or authorized accounts with no access activity) are findings that require investigation. Implementing these controls together produces stronger assurance than either control alone.
