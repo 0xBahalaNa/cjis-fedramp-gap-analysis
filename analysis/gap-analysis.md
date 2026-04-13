@@ -11,7 +11,7 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 | AU-6 | Audit | Complete |
 | IA-2 | Authentication | Complete |
 | IA-5 | Authentication | Complete |
-| IR-6 | Incident Response | Pending |
+| IR-6 | Incident Response | Complete |
 | MP-6 | Media Protection | Complete |
 | PE-17 | Physical/Environmental | Pending |
 | PS-3 | Personnel | Complete |
@@ -643,3 +643,76 @@ An auditor will expect to see:
 - **Automation reduces review burden.** Manual quarterly reviews for a large user population (hundreds of officers across multiple agencies) become unsustainable. Automate the report generation, prerequisite compliance checking, and last-access-date calculation. Reserve human judgment for the certification decision itself: "Does this person still need this level of CJI access?"
 - **Relationship to PS-3 and PS-6.** AC-2 quarterly reviews enforce the ongoing validity of PS-3 (personnel screening) and PS-6 (access agreements). A person who was properly screened and signed the Security Addendum at onboarding may fall out of compliance if rescreening is overdue or the addendum terms have changed. AC-2 is the recurring checkpoint that verifies the entire access authorization chain remains intact.
 - **Relationship to AU-6.** AC-2 and AU-6 form a feedback loop. AU-6 weekly reviews detect who is actually accessing CJI. AC-2 quarterly reviews verify who is authorized to access CJI. Discrepancies between the two (access by unauthorized accounts, or authorized accounts with no access activity) are findings that require investigation. Implementing these controls together produces stronger assurance than either control alone.
+
+---
+
+## Incident Response
+
+### IR-6 — Incident Reporting
+
+**NIST 800-53 Rev 5 Control:** Require personnel to report suspected incidents to the organizational incident response capability within an organization-defined time period; and report incident information to organization-defined authorities.
+
+**CJIS v6.0 Reference:** Section 5.3 (Incident Response)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires incident reporting with two organization-defined parameters:
+
+- **Reporting timeframe** (ir-06_odp.01) — the organization defines how quickly personnel must report suspected incidents to the internal incident response capability. FedRAMP High typically sets this at "immediately" for confirmed incidents and within specified hours for suspected incidents.
+- **External reporting authorities** (ir-06_odp.02) — the organization defines who receives the incident information. For FedRAMP, the primary external authority is US-CERT (now part of CISA, the Cybersecurity and Infrastructure Security Agency). FedRAMP requires reporting to US-CERT/CISA within timeframes tied to the incident severity (US-CERT classifies incidents by functional impact and information impact, with reporting windows ranging from 1 hour for Level 1 incidents to 24 hours for lower-severity events).
+
+FedRAMP incident reporting is oriented toward cyber threat intelligence and federal incident coordination. The reporting content focuses on technical details: indicators of compromise, tactics/techniques/procedures (TTPs), affected systems, attack vectors. The purpose is to enable US-CERT/CISA to warn other federal entities and coordinate a federal response.
+
+#### CJIS v6.0 Delta
+
+CJIS adds a parallel reporting chain for incidents involving CJI. The delta is in the authorities parameter (ir-06_odp.02), which must be expanded to include law enforcement-specific reporting channels:
+
+- **Additional reporting to CJIS Systems Officer (CSO)** — each state's CJIS Systems Agency (CSA) designates a CSO who serves as the point of contact for CJIS incident reporting. Incidents involving CJI must be reported to the CSO of the state whose agencies' CJI was affected. The CSO is a law enforcement coordination role, not a general cybersecurity role. Note the acronym collision: CJIS Systems Officer (CSO) is different from Chief Security Officer (CSO) — in a CJIS context, CSO always refers to the CJIS Systems Officer.
+- **Additional reporting to FBI CJIS Division** — the FBI CJIS Division (based in Clarksburg, West Virginia) is the federal authority responsible for CJIS oversight. Incidents involving CJI must be reported to the FBI CJIS Division in addition to US-CERT/CISA. This reporting often flows through the state CSO but may go directly to the FBI for certain incident types.
+- **Sequential reporting chain** — the CJIS reporting chain is hierarchical: local agency → state CSA/CSO → FBI CJIS Division. Each level has jurisdictional authority over the agencies and data within its scope. For a CSP serving multiple state agencies, this means coordinating with multiple CSOs if the incident affects agencies in different states.
+- **State-defined reporting timeframes** — unlike US-CERT's standardized severity tiers with specific reporting windows, CJIS defers the reporting timeframe to the state CSA. Common timeframes range from immediate (within 1 hour for high-severity) to within 24 hours for lower-severity incidents. The CSP must confirm the specific timeframe with each state CSA it serves, and the most restrictive timeframe applies when a single incident affects multiple states.
+- **Expanded incident content** — CJIS incident reports must include information beyond the standard cyber incident report: which specific CJI data sets were affected (NCIC, III, CHRI, fingerprint data, etc.), whether the compromised data relates to active investigations, whether officer or source safety is impacted, and the number of records affected. This content is more operationally sensitive than typical FedRAMP reports.
+
+**Why this matters:** The CJIS reporting chain exists because US-CERT/CISA does not have law enforcement operational equities. When CJI is compromised, the impact is not just a cybersecurity incident — it may affect active investigations, undercover operations, protected witnesses, informants, victims (including minors), and suspect records. These are real people whose safety and ongoing legal proceedings may depend on the confidentiality of that data. The FBI CJIS Division and state CSOs have the law enforcement context to assess those operational impacts and coordinate downstream notifications to affected agencies, officers, and individuals. A CSP that reports only to US-CERT and skips CJIS reporting has satisfied FedRAMP but failed CJIS — and the consequence is loss of CJIS authorization, which ends the CSP's ability to serve law enforcement customers.
+
+#### Implementation Guidance
+
+1. **Update the Incident Response Plan to include the CJIS reporting chain.** Document the full reporting flow for CJI-related incidents:
+   - **Internal detection and triage** — how the incident is identified and classified as CJI-related.
+   - **Internal reporting** — who on the incident response team is notified, and within what timeframe.
+   - **Customer (agency) notification** — the CSP notifies the affected state and local agencies whose CJI was involved.
+   - **State CSO notification** — the CSP or the affected local agency reports to the state CSA/CSO within the state-defined timeframe.
+   - **FBI CJIS Division notification** — reported through the CSO or directly to the FBI CJIS Division, depending on state protocol.
+   - **US-CERT/CISA notification** — standard FedRAMP reporting continues in parallel with CJIS reporting.
+2. **Maintain current CSO contact information.** For each state the CSP serves, maintain the current contact information for the state CSA and CSO, including primary and backup contacts, phone numbers, email addresses, and after-hours contact procedures. CSO personnel change — verify contacts annually and after known CSA staffing changes.
+3. **Document the FBI CJIS Division contact.** The FBI CJIS Division maintains contact information for incident reporting. Include the division's contact in the IRP, along with any state-specific routing guidance (some states require the CSO to notify the FBI; others allow direct CSP notification).
+4. **Define what constitutes a CJI security incident.** A CJI security incident includes: unauthorized access to CJI (logical or physical), loss or theft of media containing CJI, unauthorized disclosure of CJI (internal or external), compromise of systems that store or process CJI (even if CJI exfiltration cannot be confirmed), and compromise of authentication credentials for CJI-authorized accounts. Document these triggers in the IRP so the response team can quickly classify an incident as CJI-related.
+5. **Build incident report templates that satisfy both frameworks.** Create standardized incident report templates for CJI incidents that capture all information required by both FedRAMP (US-CERT classification, TTPs, IOCs) and CJIS (affected CJI data sets, operational impact, affected agencies, record counts). A single template with dual-purpose sections reduces the risk of omitting required content under time pressure.
+6. **Conduct tabletop exercises that include CJIS reporting.** Test the CJIS reporting chain in tabletop exercises at least annually. Scenarios should include: CJI exfiltration, compromised CJI-authorized credentials, ransomware affecting CJI systems, and insider threat scenarios involving CJI access. Measure reporting timeliness to the CSO and FBI CJIS Division as specific tabletop objectives. Document exercise results and any gaps identified.
+7. **Establish communication channels for incident reporting.** Identify the communication channels for reaching the CSO and FBI CJIS Division during an incident: phone, encrypted email, secure portal. Verify these channels work during off-hours, since incidents often occur outside business hours. Test the channels periodically.
+
+**AWS Implementation Note:** AWS Shared Responsibility means AWS handles security incidents affecting the underlying infrastructure (hypervisor, physical hardware, AWS service planes), while the customer (the CJIS-subject CSP) handles incidents at the application and data layer. AWS reports infrastructure incidents to the customer through AWS Security Hub, AWS GuardDuty, and AWS Support cases. The CSP is responsible for classifying whether an AWS-reported infrastructure incident has CJI impact and for initiating the CJIS reporting chain accordingly. Configure AWS GuardDuty, CloudTrail alerts, and Security Hub findings to route to the incident response team with clear tagging for CJI-containing resources (e.g., resource tags like `contains-cji: true`) so the response team can quickly determine whether an alert triggers CJIS reporting.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Incident Response Plan** with explicit CJIS reporting procedures, including the full reporting chain (agency → CSO → FBI CJIS Division)
+- **CSO contact information** for each state the CSP serves, with primary and backup contacts documented and verified
+- **FBI CJIS Division contact information** documented in the IRP
+- **CJI security incident definition** documenting what triggers CJIS reporting
+- **Incident report templates** covering both FedRAMP and CJIS required content
+- **Tabletop exercise records** demonstrating testing of the CJIS reporting chain, with exercise scenarios, participants, and lessons learned
+- **Sample incident reports** (redacted) demonstrating dual reporting (US-CERT and CJIS) for past incidents, or training/exercise reports if no real incidents have occurred
+- **CSO contact verification records** showing annual or periodic verification of CSO contact information
+
+#### Key Considerations
+
+- **Acronym disambiguation.** In a CJIS context, "CSO" means CJIS Systems Officer. In general information security, "CSO" often means Chief Security Officer. Documentation, training materials, and incident procedures must use "CJIS Systems Officer (CSO)" on first mention and in any context where the distinction could be confused. A mis-directed incident report to the Chief Security Officer when it should have gone to the CJIS Systems Officer is a reporting failure.
+- **Multi-state coordination complexity.** A CSP serving agencies in multiple states must maintain relationships with multiple CSOs. A single incident affecting data from agencies in California, Texas, and New York requires notification to three different CSOs, each with potentially different reporting timeframes and content requirements. The incident response team should have a playbook that maps customer agencies to their state CSA/CSO so the notification chain is not improvised during an incident.
+- **Timing pressure is real.** State-defined reporting timeframes can be tight (1 hour for high-severity in some states). The internal triage process — from detection to classification as CJI-related to CSO notification — must be fast enough to meet the shortest applicable timeframe. If internal processes take 4 hours to triage and classify an incident, but the state requires CSO notification within 1 hour, the CSP is structurally unable to comply. Measure internal triage time in tabletop exercises.
+- **Content sensitivity of CJIS reports.** CJIS incident reports may contain more operationally sensitive information than FedRAMP reports: identities of informants or undercover officers, specifics of active investigations, or details about protected witnesses. Ensure the communication channel to the CSO is encrypted and that the report content is handled with appropriate sensitivity. Do not transmit sensitive operational content through unsecured email or ticketing systems.
+- **Coordination with the affected agencies.** The local or state law enforcement agencies whose CJI was affected have their own incident response obligations and stakeholder notifications (to victims, witnesses, involved officers). The CSP's incident reporting to the CSO is the trigger for the agency's downstream actions — which means the CSP's report must contain enough operational detail for the agency to act. Coordinate with major customer agencies in advance to understand what information they need in an incident notification.
+- **Loss of CJIS authorization as a business risk.** Failure to report a CJI incident through CJIS channels, or delayed reporting that exceeds the state-defined timeframe, can result in a CJIS audit finding. Severe or repeated findings can lead to loss of CJIS authorization — the CSP can no longer serve law enforcement customers. For a CSP whose primary market is public safety, this is an existential business risk, not just a compliance gap.
+- **Relationship to AU-6 and AC-2.** IR-6 often triggers from detections made during AU-6 weekly reviews (unauthorized CJI access, anomalous access patterns) or AC-2 quarterly reviews (accounts with CJI access that should have been revoked). The incident response team should have direct input channels from the AU-6 review process and the AC-2 review process, so findings from those controls escalate into IR-6 when warranted.
+- **FedRAMP continuous monitoring integration.** FedRAMP requires continuous monitoring (ConMon) with incident reporting built in. The CJIS delta layers on top of the existing ConMon program — it adds reporting destinations, not a parallel program. Frame CJIS incident reporting as an enhancement to ConMon, not a separate compliance workstream.
