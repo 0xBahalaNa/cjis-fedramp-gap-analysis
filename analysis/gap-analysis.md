@@ -7,13 +7,13 @@ Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta captu
 | Control | Category | Status |
 |---------|----------|--------|
 | AC-2 | Access Control | Complete |
-| AT-2 | Training | Pending |
+| AT-2 | Training | Complete |
 | AU-6 | Audit | Complete |
 | IA-2 | Authentication | Complete |
 | IA-5 | Authentication | Complete |
 | IR-6 | Incident Response | Complete |
 | MP-6 | Media Protection | Complete |
-| PE-17 | Physical/Environmental | Pending |
+| PE-17 | Physical/Environmental | Complete |
 | PS-3 | Personnel | Complete |
 | PS-6 | Personnel | Complete |
 | SC-12 | Encryption | Complete |
@@ -716,3 +716,147 @@ An auditor will expect to see:
 - **Loss of CJIS authorization as a business risk.** Failure to report a CJI incident through CJIS channels, or delayed reporting that exceeds the state-defined timeframe, can result in a CJIS audit finding. Severe or repeated findings can lead to loss of CJIS authorization — the CSP can no longer serve law enforcement customers. For a CSP whose primary market is public safety, this is an existential business risk, not just a compliance gap.
 - **Relationship to AU-6 and AC-2.** IR-6 often triggers from detections made during AU-6 weekly reviews (unauthorized CJI access, anomalous access patterns) or AC-2 quarterly reviews (accounts with CJI access that should have been revoked). The incident response team should have direct input channels from the AU-6 review process and the AC-2 review process, so findings from those controls escalate into IR-6 when warranted.
 - **FedRAMP continuous monitoring integration.** FedRAMP requires continuous monitoring (ConMon) with incident reporting built in. The CJIS delta layers on top of the existing ConMon program — it adds reporting destinations, not a parallel program. Frame CJIS incident reporting as an enhancement to ConMon, not a separate compliance workstream.
+
+---
+
+## Physical and Environmental Protection
+
+### PE-17 — Alternate Work Site
+
+**NIST 800-53 Rev 5 Control:** Determine and document the alternate work sites allowed for use by employees; employ organization-defined controls at alternate work sites; assess the effectiveness of controls at alternate work sites; and provide a means for employees to communicate with information security and privacy personnel in case of incidents.
+
+**CJIS v6.0 Reference:** Section 5.9 (Physical Protection)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires organizations to define and control alternate work sites. The baseline defers to organization-defined parameters for:
+
+- **Allowed alternate work sites** (pe-17_odp.01) — the organization defines which alternate work sites are authorized for use (government facilities, employee residences, customer sites, etc.)
+- **Controls at alternate work sites** (pe-17_odp.02) — the organization defines which security controls must be employed at alternate work sites
+
+FedRAMP High is satisfied by documenting the types of alternate work sites allowed and the controls applied at those sites. The controls are left to the organization's discretion based on its risk assessment. For a typical FedRAMP-authorized cloud service, this often means: VPN required for remote access, endpoint protection on managed devices, and organizational policy prohibiting CJI storage on unmanaged devices. The baseline does not prescribe specific authentication strengths, specific VPN configurations, or specific BYOD restrictions.
+
+#### CJIS v6.0 Delta
+
+CJIS replaces the organizational discretion with specific prescriptive controls for remote CJI access. The delta recognizes that physical location security — which provides a layer of protection in a police station — cannot be assumed at alternate work sites:
+
+- **Advanced Authentication is mandatory** — Advanced Authentication (AAL2-compliant MFA per IA-2) is required for all remote CJI access, regardless of the alternate work site's perceived security. This is not an organization-defined choice. Physical location security (being inside a secure facility) cannot be used as a compensating control to lower authentication requirements when CJI is accessed remotely. The reasoning: at an alternate work site, there is no guarantee of who else has physical access to the device or the workspace.
+- **Encrypted VPN or equivalent secure connection required** — all network traffic carrying CJI to/from an alternate work site must be protected by an encrypted VPN or equivalent (VDI, zero-trust network access with equivalent cryptographic controls). Public networks (coffee shop WiFi, cellular data, hotel networks) cannot be trusted to carry CJI in clear text. The VPN or equivalent must use FIPS-validated cryptography (per SC-13).
+- **BYOD (personally owned devices) restrictions** — personal devices used for CJI access must meet agency-defined security configuration standards. This typically includes: full-disk encryption, current endpoint protection, managed patch level, automatic screen lock, and remote wipe capability. Personal devices that do not meet the standard cannot be used for CJI access.
+- **Restrictions on CJI storage on personally owned devices** — CJI must not be stored on personally owned devices unless the storage is encrypted with agency-managed keys AND the storage has been explicitly approved by the state CSA. The default is: do not store CJI on personal devices. Exceptions require both technical controls (agency-managed encryption) and administrative approval (CSA sign-off).
+- **Physical environment considerations** — the alternate work site itself must provide reasonable protection against shoulder surfing, unauthorized viewing of CJI on screens, and physical access by non-authorized persons. This translates to practical requirements: screen privacy filters in public areas, session lock when unattended, not leaving devices unattended in vehicles, and not conducting CJI work in environments where conversation can be overheard.
+
+**Why this matters:** A CSP operating under FedRAMP High may satisfy PE-17 by documenting remote access via VPN and organizational BYOD policy. CJIS requires the specific controls to be named and enforced: the MFA must be AAL2 phishing-resistant, the VPN must use FIPS-validated crypto, BYOD must meet agency standards, and CJI storage on personal devices is prohibited absent CSA approval. The delta is especially relevant because law enforcement has access patterns that generic FedRAMP users don't: sworn officers access CJI from patrol vehicles during traffic stops, from crime scenes, from homes during on-call shifts, and from emergency situations. These access patterns fall under "alternate work site" and must meet CJIS controls regardless of how brief or urgent the access is.
+
+#### Implementation Guidance
+
+1. **Document the approved alternate work site categories.** Define the types of alternate work sites authorized for CJI access: employee residences (for telework or on-call), law enforcement vehicles (for mobile field operations), government facilities other than the primary site, customer/agency sites during visits, and any other categories relevant to the CSP's operations. For each category, document the specific controls applied.
+2. **Enforce AAL2 Advanced Authentication for all remote access.** Configure the identity provider to require AAL2-compliant MFA (phishing-resistant: FIDO2/WebAuthn, PIV/CAC, or hardware tokens) for authentication when the access originates from outside the primary site. Note: this should be enforced at the application layer, not just the VPN layer — a user who authenticates to the VPN with MFA but then uses a password-only session to the CJI application has not satisfied AAL2 at the point of CJI access.
+3. **Deploy encrypted VPN infrastructure.** Implement a VPN solution using FIPS 140-2/3 validated cryptography. Document the VPN cipher suite configuration, authentication mechanism, and session timeout settings. If using an alternative to traditional VPN (VDI, zero-trust network access, cloud-delivered secure web gateway), document equivalent cryptographic controls. Verify the solution prevents split-tunneling for CJI traffic — all CJI access must be routed through the encrypted tunnel.
+
+   **AWS Implementation:** For AWS-hosted CJI systems, consider AWS Client VPN with FIPS endpoints and AWS-managed certificates, or AWS Verified Access for zero-trust application access. For applications in private subnets, require access via PrivateLink or VPC endpoints to prevent internet-exposed CJI data paths. Configure the VPN/Verified Access with MFA integration (IAM Identity Center or external IdP with AAL2 enforcement).
+
+4. **Establish BYOD policy with technical enforcement.** If BYOD is permitted for CJI access, define the security configuration requirements: full-disk encryption (FileVault on macOS, BitLocker on Windows, native encryption on mobile), current OS patch level, endpoint protection, automatic screen lock within defined timeout, and remote wipe capability through MDM enrollment. Enforce the policy technically through conditional access: devices that do not meet the standard cannot authenticate to CJI applications.
+
+   **AWS Implementation:** Use AWS Verified Access with device trust signals from an MDM (Jamf, Intune, etc.) to enforce BYOD compliance at the access point. For applications, AWS IAM Identity Center can integrate with device trust signals through SAML assertions from the IdP.
+
+5. **Prohibit CJI storage on personally owned devices by default.** Configure applications to prevent local data download or caching on personal devices. Where possible, use VDI or application streaming so CJI never leaves the server infrastructure. If CJI must be stored on a device (e.g., offline field operations), require agency-managed encryption and explicit CSA approval; document the approval chain and the technical implementation.
+6. **Define physical environment guidelines.** Document the physical environment requirements for CJI access at alternate work sites: locked workspace when unattended, screen privacy considerations, no CJI conversation in public areas, devices not left unattended in vehicles. Include these in user training (ties to AT-2) and in the access authorization documentation.
+7. **Provide incident communication channels.** Per the baseline requirement, provide employees with means to communicate security incidents while at alternate work sites. Document contact information for the CSP's incident response team, including after-hours contacts, and ensure this information is accessible from remote locations (not only on the internal network).
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **Alternate work site policy** documenting authorized site categories and the controls applied at each
+- **Remote access architecture documentation** showing VPN/Verified Access configuration, MFA enforcement, and encryption specifications
+- **BYOD policy** documenting required device security configurations and the enforcement mechanism
+- **Conditional access configuration** showing device trust signals, MFA requirements, and access denial rules
+- **VPN cipher suite exports** showing FIPS-validated cryptography in use
+- **MFA enforcement configuration** showing AAL2 compliance at the application layer, not just network perimeter
+- **CSA approval documentation** for any exceptions allowing CJI storage on personally owned devices
+- **Incident communication contact information** accessible to remote personnel
+- **User training records** covering physical environment guidelines for remote CJI access (overlaps with AT-2 evidence)
+
+#### Key Considerations
+
+- **Application-layer MFA is where implementations fail.** Many organizations enforce MFA at the VPN layer but allow password-only authentication to the application once the user is on the VPN network. This does not satisfy AAL2 for CJI access. The MFA must be enforced at the point of CJI access, which means the application itself or the IdP providing the application's authentication. An auditor will test this by authenticating to the VPN with MFA and then attempting to access the CJI application with password only — if it succeeds, this is a finding.
+- **Mobile field operations create unique patterns.** Sworn officers accessing CJI from patrol vehicles during traffic stops need sub-second authentication for operational reasons. This is often implemented with hardware tokens (YubiKey, smart cards) rather than software MFA that requires typing a code. Document the authenticator types used in mobile field operations and verify they meet AAL2 phishing-resistance requirements.
+- **Public safety exigent circumstances.** Some CJIS provisions allow for relaxed authentication in emergency situations (officer safety, imminent threat). These exceptions are narrow and documented in state CSA policy. They are not a general exemption — document any exigent access provisions explicitly and verify they are consistent with state CSA guidance.
+- **BYOD is a hard policy choice.** The most defensible CJIS posture is: no BYOD for CJI access. All CJI access occurs on agency-issued devices with enforced configurations. BYOD is allowed in some environments but introduces significant complexity in compliance verification. If the CSP's model requires BYOD support (e.g., contractors using their own laptops), document the compensating controls thoroughly.
+- **Split-tunneling is a common compliance gap.** A VPN that allows split-tunneling (CJI traffic through the VPN, other traffic direct) may expose the endpoint to threats from the direct-internet traffic while CJI traffic is on the VPN. Full-tunnel VPN or access that forces all traffic through inspected paths is more defensible.
+- **Relationship to IA-2 and IA-5.** PE-17's Advanced Authentication requirement depends on IA-2 (Advanced Authentication) being implemented correctly. If IA-2 is not satisfied (e.g., authenticators are not AAL2, MFA is not phishing-resistant), PE-17 cannot be satisfied for remote access. These controls must be implemented together. Similarly, IA-5 (authenticator management) applies to the hardware tokens, certificates, and credentials used for remote CJI access.
+- **Relationship to AT-2.** Remote CJI access training is a required component of CJIS security awareness training. Users accessing CJI from alternate work sites must be specifically trained on the physical environment guidelines, BYOD restrictions, and incident reporting procedures applicable to remote access. Document this overlap in training content.
+
+---
+
+## Awareness and Training
+
+### AT-2 — Literacy Training and Awareness
+
+**NIST 800-53 Rev 5 Control:** Provide security and privacy literacy training to system users as part of initial training for new users and at organization-defined frequency thereafter; update training content at organization-defined frequency; and incorporate lessons learned from security incidents into training content.
+
+**CJIS v6.0 Reference:** Section 5.2 (Security Awareness Training)
+
+#### FedRAMP High Baseline Requirement
+
+FedRAMP High requires security and privacy literacy training for all system users, including managers, senior executives, and contractors. The baseline defers to organization-defined parameters for:
+
+- **Training frequency after initial training** (at-02_odp.01, at-02_odp.02) — FedRAMP typically sets this to "at least annually" for both security and privacy training.
+- **Events triggering training** (at-02_odp.03, at-02_odp.04) — the organization defines events (system changes, new threats, policy updates) that trigger refresh training.
+- **Awareness techniques** (at-02_odp.05) — the organization defines the techniques used to increase awareness (posters, logon banners, email advisories, phishing simulations).
+- **Content update frequency and triggering events** (at-02_odp.06, at-02_odp.07) — the organization defines how often training content is refreshed and what events trigger content updates.
+
+FedRAMP High is satisfied by providing annual security and privacy awareness training covering general topics (phishing, password hygiene, incident reporting, data handling). The baseline does not prescribe specific content topics beyond the general security/privacy scope, and it does not set a specific initial training deadline — initial training is required but the timeline is often "as part of onboarding" or similar.
+
+#### CJIS v6.0 Delta
+
+CJIS adds specific requirements around training timing and content, but — notably — the refresh *frequency* is actually less strict than FedRAMP:
+
+- **Initial CJIS Security Awareness Training within 6 months of CJI access** — personnel authorized for CJI access must complete CJIS-specific security awareness training within 6 months of the initial CJI access authorization. This is unusual in that training can occur *after* access is granted, not strictly before. The rationale: onboarding delays for fingerprint-based background checks (PS-3) can already take weeks; requiring CJIS-specific training completion before access would cascade delays in operationally critical roles. However, the 6-month window is a hard deadline — personnel who do not complete training within 6 months must have CJI access suspended until training is completed.
+- **Biennial (every 2 years) refresher training** — after initial training, CJIS requires refresher training every 2 years. This is **less frequent** than FedRAMP's typical annual cadence. The CJIS delta here is not about frequency (CJIS is less strict) but about content: the biennial refresher must cover CJIS-specific topics, not just generic security awareness. An agency providing annual FedRAMP-style training does not automatically satisfy CJIS biennial requirements if the content does not include CJIS-specific material.
+- **CJIS-specific content requirements** — the training content must explicitly cover:
+  - **CJI handling and dissemination rules** — what constitutes CJI, how it may be used, who it may be shared with, and the rules around dissemination (including the 28 CFR Part 20 dissemination restrictions on criminal history record information).
+  - **Security Addendum obligations** — the terms of the CJIS Security Addendum (PS-6), including personal accountability, sanctions for violations, and the individual's responsibilities under the addendum.
+  - **Incident reporting requirements for CJI** — the CJIS incident reporting chain (agency → CSO → FBI CJIS Division, per IR-6) and the user's role in reporting suspected incidents.
+  - **Sanctions for policy violations** — the consequences of CJIS policy violations, which can include termination, criminal prosecution, and loss of certification. CJIS violations are not just administrative — they can be federal crimes under 18 USC 2721 (Driver's Privacy Protection Act) or state-specific criminal statutes for misuse of criminal justice data.
+- **Training tied to the access authorization chain** — CJIS security awareness training status must be tracked per individual with CJI access. Expired or never-completed training is grounds for access suspension. This creates a dependency: CJI access (AC-2) depends on current training (AT-2), just as it depends on current background check (PS-3) and signed Security Addendum (PS-6).
+
+**Why this matters:** A CSP operating under FedRAMP High likely has annual security awareness training, but the content is almost certainly generic — phishing, password hygiene, reporting suspicious activity. CJIS training content must explicitly cover CJI handling rules, Security Addendum obligations, CJIS-specific incident reporting, and sanctions. The 6-month initial training deadline adds a tracking burden: personnel with CJI access must be monitored for training completion within 6 months of access grant, and non-compliance must trigger access suspension. The biennial refresh is easier than the FedRAMP annual cadence, but only if the content actually covers CJIS topics — generic annual training does not satisfy the requirement.
+
+#### Implementation Guidance
+
+1. **Develop or acquire CJIS-specific training content.** Create training content covering the four required topic areas (CJI handling, Security Addendum, incident reporting, sanctions). Content sources include: state CSA-provided training materials (some states publish or distribute CJIS training content), commercial CJIS training vendors, or in-house developed content based on CJIS Security Policy v6.0 Section 5.2 and related sections. Ensure content is updated when CJIS policy changes (v6.0 content must reflect current requirements, not v5.x).
+2. **Track training status per individual with CJI access.** Maintain a training tracking system that records, for each CJI-authorized user: date of initial CJIS training completion, date of most recent biennial refresh, training content version, and completion status. Integrate the tracking system with the CJI-authorized user roster (from AC-2 implementation guidance) so training status is part of the quarterly access review.
+3. **Implement the 6-month initial training deadline.** Create an automated workflow that flags CJI-authorized users who have not completed initial CJIS training within 6 months of access grant. The workflow should: send reminder notifications at 3, 5, and 6 months after access grant; escalate to the user's manager and the CJIS Systems Officer if training is not completed by the 6-month deadline; and automatically suspend CJI access upon expiration.
+
+   **AWS Implementation:** For personnel who manage CJI infrastructure in AWS, tag IAM users or Identity Center users with training completion metadata (e.g., `cjis-training-completed: 2026-04-15`). Use Lambda scheduled functions to query the tags and flag users approaching or exceeding the 6-month deadline. For access suspension automation, Lambda can remove users from the CJI access permission set in IAM Identity Center.
+
+4. **Implement biennial refresher automation.** Configure the tracking system to generate refresher notifications 2 years after the last completed training (with reminders at 21, 23, and 24 months). The content of the refresher must cover CJIS-specific topics, not just generic security awareness. If the organization delivers annual security awareness training for FedRAMP compliance, document which annual sessions include CJIS-specific content and serve as the biennial CJIS refresher.
+5. **Document content coverage mapping.** Create a mapping showing how the training content addresses each required CJIS topic area. This is audit evidence: the auditor will want to verify that the training actually covers CJI handling, Security Addendum, incident reporting, and sanctions — not just that training was completed.
+6. **Integrate with AC-2 quarterly reviews.** The quarterly access review process (per AC-2) must include verification of training currency. Any CJI-authorized user with expired training (exceeding 2 years since last completion) or overdue initial training (exceeding 6 months since access grant) must be flagged for access suspension during the review.
+7. **Address training for alternate work site scenarios.** Per PE-17, users accessing CJI from alternate work sites need specific guidance on physical environment considerations, BYOD restrictions, and incident reporting. Include these topics in the CJIS training content, or provide supplemental training for remote CJI access users.
+
+#### Evidence Required
+
+An auditor will expect to see:
+
+- **CJIS Security Awareness Training curriculum or content** covering the four required topic areas (CJI handling, Security Addendum, incident reporting, sanctions)
+- **Content coverage mapping** showing how the training addresses each required CJIS topic
+- **Training completion records** per individual with CJI access, including initial completion date and refresher dates
+- **Evidence of initial training within 6 months of CJI access** — access grant dates cross-referenced with training completion dates
+- **Evidence of biennial refresher compliance** — refresh dates showing no gaps exceeding 2 years
+- **Training tracking system configuration** showing the deadline enforcement (6-month initial, 2-year refresh) and notification workflows
+- **Access suspension records** for personnel whose training lapsed and whose CJI access was suspended as a consequence
+- **Training content update records** showing content is refreshed when CJIS policy changes (e.g., v5.x to v6.0 transition)
+
+#### Key Considerations
+
+- **Biennial vs. annual cadence — a rare case where CJIS is less strict.** Most CJIS deltas tighten FedRAMP requirements. AT-2 is a rare case where CJIS is actually less strict on frequency (2 years vs. FedRAMP's 1 year). However, an annual FedRAMP training cycle does not automatically satisfy CJIS unless the content explicitly covers CJIS topics. The simplest implementation: provide annual security awareness training with CJIS-specific content included in every second year's session, ensuring CJIS content coverage at least every 2 years. Alternatively, provide a dedicated CJIS-specific training module annually, which exceeds the CJIS minimum and avoids the complexity of alternating content cycles.
+- **The 6-month deadline is forgiving but operationally demanding.** Unlike PS-3 (fingerprint check, which must precede access) or PS-6 (Security Addendum, which must precede access), AT-2 training can occur after access is granted. This is a concession to operational reality — police departments cannot wait 6 months for a new officer to complete training before the officer can access NCIC. But the 6-month window must be tracked and enforced. An organization that grants CJI access and never tracks training completion has satisfied AC-2 (account management) but failed AT-2 (training).
+- **Sanctions content has legal weight.** The sanctions topic in CJIS training is not generic "you could be fired" language. CJIS violations can constitute federal crimes (18 USC 2721 for criminal history data misuse) or state criminal offenses. Training content should accurately reflect this — misrepresenting sanctions as merely administrative is both a training gap and a legal risk for the organization.
+- **The Security Addendum content is specific.** The CJIS Security Addendum (PS-6) contains specific personal commitments the signatory makes regarding CJI handling, confidentiality, and sanctions for violations. Training must cover the addendum content so signatories understand what they committed to, not just that they signed something during onboarding. This is where PS-6 (the signed addendum) and AT-2 (training on its content) intersect.
+- **Integration with the prerequisite chain.** CJIS access authorization depends on four prerequisites being satisfied: PS-3 (background check), PS-6 (Security Addendum), IA-2 (Advanced Authentication enrolled), and AT-2 (training current). During AC-2 quarterly reviews, all four prerequisites must be verified. If any is out of compliance, access must be suspended until remediated. AT-2 is the most likely to lapse quietly because training has an expiration date and personnel may not be actively tracking it.
+- **Role-specific training considerations.** CJIS training requirements apply to all personnel with CJI access, but the level of detail may vary by role. A sworn officer querying NCIC needs different emphasis than a database administrator with logical access to CJI at rest. Consider role-based training tracks within the CJIS training program, with shared core content on dissemination rules, Security Addendum, and sanctions, and role-specific content on handling CJI in the user's operational context.
+- **Phishing simulation integration.** If the organization conducts phishing simulations as part of awareness techniques (at-02_odp.05), ensure the simulations include CJI-relevant scenarios (e.g., fake credentials prompts for CJI systems, fake communications purporting to be from the CJIS Systems Officer). Generic phishing simulations do not reflect the threat landscape for law enforcement users.
+- **Content versioning.** CJIS Security Policy has evolved (v5.x to v6.0 was a significant update with alignment to NIST 800-53 Rev 5). Training content must be versioned and updated when policy changes. An organization delivering 2026 training with 2022-era content has not satisfied the content update requirement (at-02_odp.06).
