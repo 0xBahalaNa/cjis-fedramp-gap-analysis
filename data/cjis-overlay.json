@@ -781,6 +781,194 @@
               ]
             }
           ]
+        },
+        {
+          "control-id": "au-3.3",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "au_3_3_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Limit PII Elements in Audit Records",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "pii-limitation"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "au_3_3_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's AU-3 requires specific audit record content (timestamp, event type, source, outcome, identity) but does not impose PII minimization within audit records."
+                    },
+                    {
+                      "id": "au_3_3_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Audit records must contain only the PII elements identified as necessary in the privacy risk assessment (RA-3). Intent is that log contents themselves do not become a secondary PII exposure. For CJI, typically log the action metadata (who, when, what object, from where) without embedding the full CJI payload."
+                    },
+                    {
+                      "id": "au_3_3_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Conduct RA-3 privacy risk assessment to define permitted audit record elements. Log object identifiers (case ID, record ID) rather than object content. Sanitize at the logging layer so implicit logging (dumping full request/response objects) does not leak PII. Apply minimization to exported log copies (SIEM, central log platform). Reconcile with AU-6 implementation-level delta (1-year retention) so minimized logs still meet retention obligations."
+                    },
+                    {
+                      "id": "au_3_3_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Privacy risk assessment output defining permitted audit record elements; audit record schema documenting the permitted element set; sample audit records showing permitted elements only; SIEM configuration demonstrating minimization in exported copies; logging library standards or code review documentation."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "pe-8.3",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "pe_8_3_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Limit PII Elements in Visitor Access Records",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "pii-limitation"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "pe_8_3_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's PE-8 requires visitor access records be maintained with defined content (name, purpose, escort, date/time) but does not require minimizing PII within those records."
+                    },
+                    {
+                      "id": "pe_8_3_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Visitor access records for facilities hosting CJI must contain only the PII elements identified in the privacy risk assessment as operationally necessary. Excess identifiers (SSN, DOB, full driver's license, photograph) must not be collected if not required for access control."
+                    },
+                    {
+                      "id": "pe_8_3_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define permitted visitor record elements via RA-3. Configure visitor management systems (and paper sign-in forms) to collect only permitted elements. Align with retention and SI-12.3 disposal schedules. Communicate the collection rationale to visitors who ask."
+                    },
+                    {
+                      "id": "pe_8_3_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Privacy risk assessment output defining permitted visitor record elements; visitor management system configuration or sign-in form showing limited element set; sample visitor records demonstrating compliance; retention and disposal documentation for visitor logs."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ac-3.14",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ac_3_14_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Individual Access to PII",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "pii-limitation"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ac_3_14_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP does not require a subject-access mechanism. U.S. subject access rights are sector-specific (Privacy Act, HIPAA, GLBA)."
+                    },
+                    {
+                      "id": "ac_3_14_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Provide a mechanism enabling individuals to access their own PII elements as defined. NIST supplemental guidance recognizes law-enforcement records may be exempt from disclosure under Privacy Act (j)(2) or state analogues; the control operates as: provide the mechanism, apply statutory exemptions when responding."
+                    },
+                    {
+                      "id": "ac_3_14_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define the access mechanism (forms, authentication, fees, SLA, redaction policy) coordinated with the state CSA. Authenticate requesters strongly (notarized request, in-person ID verification, or AAL2 electronic identity proofing per IA-2). Route to privacy official and legal counsel for adjudication. Respond with cited exemptions for withheld elements. Track request volume, response time, and approval breakdown."
+                    },
+                    {
+                      "id": "ac_3_14_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Documented access mechanism (forms, authentication, SLA, redaction policy); exemption register cataloguing applicable statutory exemptions; sample request records showing full workflow from intake through response; aggregate metrics for access requests received and resolved."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "sc-7.24",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "sc_7_24_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — PII Processing Rules at Boundaries",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "pii-limitation"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "sc_7_24_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's SC-7 requires boundary protection (firewalls, DMZ) but not PII-specific processing rules with exception tracking."
+                    },
+                    {
+                      "id": "sc_7_24_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "For systems processing CJI: define processing rules per PII element (what operations are allowed), monitor for permitted processing at external interfaces and internal boundaries, document each exception, and periodically review and remove stale exceptions."
+                    },
+                    {
+                      "id": "sc_7_24_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define processing rules per CJI element class in the SSP (sc-07.24_odp parameter). Enforce at technical boundaries (API gateways, inter-tier controls) using policy-as-code where feasible (OPA/Rego, API gateway policies). Instrument boundaries with telemetry to record rule evaluations. Maintain an exception register with scope, compensating control, and expiration. Review exceptions on a defined cadence (typical quarterly) and close stale exceptions."
+                    },
+                    {
+                      "id": "sc_7_24_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Processing rules documentation per CJI element class; boundary configuration (API gateway policy, inter-tier enforcement rules); monitoring telemetry showing rule evaluations; exception register listing active exceptions with scope and expiration; exception review records showing closure of stale exceptions."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
