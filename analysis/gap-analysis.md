@@ -1039,3 +1039,164 @@ Typical disposal techniques:
 - **Log-retention tension.** AU-6 implementation-level delta requires 1-year minimum retention for CJI audit events; SI-12.3 requires disposal at retention end. The reconciliation: dispose at exactly 1 year plus any extension, not earlier (would violate AU-6) and not later (would violate SI-12.3 minimization principle).
 - **Backup retention alignment.** Backup systems often retain for years for DR purposes. A 7-day retention on an active database plus a 2-year retention on its nightly backup is an inconsistency — the backup retains what the active system has disposed. Align backup retention with the disposal schedule or document the deliberate offset and its legal/operational basis.
 - **Cloud provider snapshot copies.** Some cloud services retain snapshots or transit copies that the customer does not directly control (for example, AWS S3 versioning history, RDS automated backups). Understand the provider's data lifecycle and ensure provider disposal mechanisms align with SI-12.3, or contractually flow down the obligation to the provider.
+
+---
+
+### AU-3.3 — Limit Personally Identifiable Information Elements (Audit Records)
+
+**NIST 800-53 Rev 5 Control:** Limit personally identifiable information contained in audit records to the following elements identified in the privacy risk assessment: [organization-defined elements].
+
+**CJIS v6.0 Reference:** PII-in-log minimization; intersects with AU-6 (implementation-level delta requiring weekly review and 1-year retention).
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's AU-3 base control requires specific content in audit records (timestamp, event type, source, outcome, identity) but does not impose PII minimization within those records. FedRAMP audit records can therefore contain significant PII, bounded only by the AU-3 minimums and organizational practice.
+
+#### CJIS v6.0 Requirement
+
+Audit records must contain only the PII elements identified as necessary in the privacy risk assessment. The intent is that log contents themselves do not become a secondary privacy exposure. For CJI, audit logs typically need to record who queried what case, when, from where, and the action's outcome — not the full query response payload.
+
+#### Implementation Guidance
+
+1. **Conduct the privacy risk assessment for audit records.** RA-3 output defines which PII elements are permissible in logs. Typical permitted set: user identifier, action, object identifier (case ID, record ID), timestamp, source IP or host. Typical excluded set: full CJI payload, fingerprint template data, full criminal history return, photo data.
+2. **Separate identity from content.** Log the object ID, not the object content. The audit log says "user X accessed record Y at time T"; the content of record Y is not stored inline in the log. If content is needed for investigation, reconstruct via the record ID against the primary data store.
+3. **Sanitize at the logging layer.** Application code that writes audit records should construct log payloads from the permitted-elements list explicitly, not dump the full request/response object. Implicit logging (Python `logger.info(request)` with a full PII-bearing object) is a common source of leakage.
+4. **Apply to aggregated and exported logs.** If audit data is exported to a SIEM or central logging platform, the minimization applies to those copies too. Masking or transformation before export is preferable to retroactive redaction.
+5. **Reconcile with AU-6 retention.** CJIS requires 1-year minimum retention for CJI audit events. Minimized logs are still subject to this. The interplay: minimize content, preserve necessary elements, retain for the full period.
+
+#### Evidence Required
+
+- **Privacy risk assessment output** (RA-3) defining permitted audit record elements for AU-3.3 parameter (au-03.03_odp).
+- **Audit record schema** documenting the permitted element set.
+- **Sample audit records** showing permitted elements only; no full CJI payloads.
+- **SIEM or central logging configuration** demonstrating minimization in exported copies.
+- **Code review or logging library standards** showing sanitization at the logging boundary.
+
+#### Key Considerations
+
+- **Tension with thorough audit.** A responder investigating a suspicious access may want the full query payload, not just the object ID. Design the logging architecture to support just-in-time retrieval of the content via the object ID rather than preserving it inline. This preserves investigative capability without inflating the audit log's privacy risk.
+- **Log volume and retention cost.** Paradoxically, minimization reduces storage costs and eases 1-year retention compliance (AU-6 implementation-level delta) since logs are smaller.
+- **Propagation into SIEM.** If CJI-minimized logs feed a SIEM, the SIEM's privacy posture inherits the minimization. If the SIEM enriches with additional context (geolocation, user profile), those enrichments must not reintroduce excluded PII.
+
+---
+
+### PE-8.3 — Limit Personally Identifiable Information Elements (Visitor Access Records)
+
+**NIST 800-53 Rev 5 Control:** Limit personally identifiable information contained in visitor access records to the following elements identified in the privacy risk assessment: [organization-defined elements].
+
+**CJIS v6.0 Reference:** PII-in-visitor-log minimization; applies to facilities where CJI is stored or processed.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's PE-8 base control requires visitor access records to be maintained for a defined period, with defined content (name, purpose of visit, name of escort, date/time). FedRAMP does not require minimizing PII within those records beyond the baseline content.
+
+#### CJIS v6.0 Requirement
+
+Visitor access records for facilities hosting CJI must contain only the PII elements identified in the privacy risk assessment as operationally necessary. Excess identifiers (for example, SSN, DOB, full driver's license number) must not be collected or retained in visitor logs if they are not required for the access control purpose.
+
+#### Implementation Guidance
+
+1. **Define permitted visitor record elements via RA-3.** Typical permitted set: name, employer or agency affiliation, purpose of visit, escort, date/time of entry/exit. Typical excluded set: SSN, DOB, full driver's license number, photograph (unless operationally required for access control).
+2. **Update visitor management system configuration.** Many commercial visitor management systems capture by default more than is needed. Configure the system to collect only the permitted elements.
+3. **Physical logs (paper sign-in sheets) follow the same rule.** If the facility uses paper visitor logs, the form must not request excluded elements.
+4. **Align with retention and disposal.** Visitor records are subject to retention schedules. When they reach end-of-retention, apply SI-12.3 disposal techniques. Visitor records are a small but real surface for PII retention drift.
+5. **Communicate the collection rationale.** If visitors ask why specific elements are collected (or not collected), staff should be able to cite the privacy risk assessment rationale.
+
+#### Evidence Required
+
+- **Privacy risk assessment output** (RA-3) defining permitted visitor record elements for PE-8.3 parameter (pe-08.03_odp).
+- **Visitor management system configuration** or sign-in form showing the limited element set.
+- **Sample visitor records** demonstrating compliance.
+- **Retention and disposal documentation** for visitor logs.
+
+#### Key Considerations
+
+- **Escort visits to data centers hosting CJI.** Many cloud-hosted CJIS deployments involve CSP-operated data centers that rarely if ever have agency personnel on-site as visitors. PE-8.3 applies nonetheless to whatever visitor logs exist (for example, CSP-side maintenance vendor visits, agency audit visits, inspectors). The CSP's visitor logging practice is in scope.
+- **Agency-operated facilities (command centers, evidence rooms).** Agencies operating their own CJI-hosting facilities have a more direct PE-8.3 obligation. Visitor traffic is typically higher and the log scrutiny from CJIS auditors is more visible.
+- **Badge-reader logs versus sign-in logs.** Electronic access logs from badge readers typically do not contain PII beyond badge ID, which is not typically considered PII unless linked to the cardholder directly. Those are usually out of PE-8.3 scope, but the linkage table (badge ID to cardholder) that can re-link is in scope for other controls (AC-2, AC-3).
+
+---
+
+### AC-3.14 — Individual Access
+
+**NIST 800-53 Rev 5 Control:** Provide [organization-defined mechanisms] to enable individuals to have access to the following elements of their personally identifiable information: [organization-defined elements].
+
+**CJIS v6.0 Reference:** Subject access to own PII; law-enforcement records exemption recognized in supplemental guidance.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High does not require a subject-access mechanism. U.S. subject access rights are sector-specific (Privacy Act for federal agency records, HIPAA for health, GLBA for financial) and FedRAMP does not generalize them.
+
+#### CJIS v6.0 Requirement
+
+Provide a mechanism enabling individuals to access the organization-defined elements of their own PII. For CJI specifically, the NIST supplemental guidance explicitly recognizes that law enforcement records may be exempt from disclosure under Privacy Act section (j)(2) or state analogues. The control therefore operates as: provide the mechanism; apply the statutory exemptions when responding.
+
+The relationship with SI-18.4 (individual requests for correction/deletion):
+- **AC-3.14 = access** (I want to see what you have about me).
+- **SI-18.4 = correction/deletion** (I want you to fix or remove what you have).
+They are complementary controls; an individual typically exercises access first, then correction.
+
+#### Implementation Guidance
+
+1. **Define the access mechanism.** Typically coordinated with the state CSA. Forms, authentication requirements, fees (if any), response SLAs, and redaction policy should be documented. Exemptions must be pre-catalogued so the response can cite them.
+2. **Authenticate the requester.** Subject access requires strong identity verification — a requester is asking for another person's record if identity is not verified. Typical mechanisms: notarized request, in-person verification with government ID, or AAL2 electronic identity proofing (coordinates with IA-2 implementation-level delta which requires AAL2 for CJI access).
+3. **Route to privacy and legal for adjudication.** Senior agency official for privacy, legal counsel, and often the CJIS Systems Officer review the request. The adjudication determines what is released, what is redacted, what is withheld under exemption.
+4. **Respond with cited exemptions.** If elements are withheld, cite the exemption source (statute or regulation). A plain "no" without citation is non-compliant with typical Privacy Act practice.
+5. **Track the requests.** Volume, response time, approval/partial-approval/denial breakdown; metrics feed privacy program reporting.
+
+#### Evidence Required
+
+- **Documented access mechanism** (forms, authentication requirements, fees, SLA, redaction policy).
+- **Exemption register** cataloguing applicable statutory exemptions.
+- **Sample request records** showing the full workflow (intake, authentication, adjudication, response with citations).
+- **Aggregate metrics** for access requests received and resolved.
+
+#### Key Considerations
+
+- **Law-enforcement records exemption is broad, not absolute.** The Privacy Act (j)(2) exemption applies to maintained systems of records principally compiled for criminal law enforcement purposes. Not every CJI system qualifies; apply the exemption rigorously per statute, not reflexively.
+- **Partial disclosure is common.** Rather than full denial, many responses release non-sensitive elements (for example, arrest date and disposition category) while withholding investigative narrative, informant identity, or other sensitive elements. Partial disclosure requires a more complex redaction workflow.
+- **Identity proofing is the hard part.** Weak authentication at the request intake means someone can request another person's criminal history. Strong identity proofing is operationally burdensome but compliance-critical. Coordinate with IA-2 implementation-level delta's AAL2 guidance for online mechanisms.
+- **Chilling effect to avoid.** An overly burdensome access mechanism may effectively deny the right in practice. Reasonable authentication should not be confused with insurmountable authentication. Courts have found pretextual denial via impossible process to violate subject-access rights.
+
+---
+
+### SC-7.24 — Personally Identifiable Information at Boundaries
+
+**NIST 800-53 Rev 5 Control:** For systems that process personally identifiable information: apply the following processing rules to data elements of personally identifiable information: [organization-defined rules]; monitor for permitted processing at external interfaces and at key internal boundaries; document each processing exception; and review and remove exceptions that are no longer supported.
+
+**CJIS v6.0 Reference:** Boundary-processing rules for CJI; enforcement and monitoring at system interfaces.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's SC-7 base control requires boundary protection (firewalls, DMZ architecture) but does not require PII-specific processing rules with exception tracking. FedRAMP's PII boundary posture is generic rather than PII-aware.
+
+#### CJIS v6.0 Requirement
+
+Systems processing CJI must:
+- Define processing rules per CJI data element (what operations are allowed: read, write, dissemination to specific destinations, transformation, retention).
+- Monitor for compliance at external interfaces (for example, API gateway for NCIC queries, state CJIS network interface) and at key internal boundaries (for example, between the CJIS application tier and a database tier, between primary and replica systems).
+- Document exceptions where processing deviates from the rules.
+- Periodically review the exception list and remove stale exceptions.
+
+#### Implementation Guidance
+
+1. **Define processing rules per CJI element class.** Example: "Driver's license numbers may be queried by dispatch; they must not be exported to non-dispatch systems; they must be masked in analytics outputs." Rules are organization-defined (sc-07.24_odp) and must be documented in the SSP.
+2. **Enforce at technical boundaries.** API gateways should be configured with per-element policy. Inter-tier communication should enforce rules (for example, a dispatch tier may not send raw fingerprint data to an analytics tier). This often requires policy-as-code approaches (for example, OPA/Rego at API gateways) that the CSP or agency can demonstrate.
+3. **Monitor at boundaries.** Instrument the boundary with telemetry that records processing attempts and rule evaluation outcomes. This becomes the evidence trail for audit.
+4. **Exception workflow.** When a processing rule must be deviated from (for example, a short-lived integration with a new system), document the exception: what rule, what scope, what compensating control, what expiration date. Exceptions without expiration drift into permanent policy violations.
+5. **Exception review cadence.** Organization-defined; typical quarterly review. Expired exceptions must be closed (either by aligning practice with the rule, extending the exception with justification, or ending the deviating practice).
+
+#### Evidence Required
+
+- **Processing rules documentation** per CJI element class (sc-07.24_odp parameter value).
+- **Boundary configuration** (API gateway policy, inter-tier enforcement rules).
+- **Monitoring telemetry** showing rule evaluation at boundaries.
+- **Exception register** listing each active exception with scope, compensating control, and expiration.
+- **Exception review records** documenting quarterly (or defined-frequency) reviews and closure of stale exceptions.
+
+#### Key Considerations
+
+- **Policy-as-code is the practical enforcement.** Ad-hoc "don't send PII across this boundary" is unenforceable at scale. OPA/Rego, API gateway policy engines, or service-mesh policy provide evaluable rules. This aligns with FedRAMP 20x compliance-as-code direction.
+- **Monitor volume can be very high.** Every CJI query is potentially a boundary evaluation. Sampling or aggregate telemetry may be necessary; full per-request logging may be prohibitive. Design the monitoring plan to balance evidentiary value with operational cost.
+- **Exception drift is the primary failure mode.** Exceptions created for good reasons become permanent in practice because no one reviews. The review cadence is the control's backstop. Without it, SC-7.24 becomes a policy that everyone exempts in practice.
+- **Ties to SI-12.1 (limit PII elements).** SI-12.1 defines what elements are in-scope; SC-7.24 enforces processing rules on those elements at boundaries. The two controls compose: SI-12.1 is the minimization principle, SC-7.24 is the enforcement mechanism at system edges.
