@@ -2,23 +2,52 @@
 
 Source data: `data/cjis-overlay.json` (OSCAL overlay with structured delta capture)
 
-## Delta Controls
+## Gap Categories
 
-| Control | Category | Status |
-|---------|----------|--------|
-| AC-2 | Access Control | Complete |
-| AT-2 | Training | Complete |
-| AU-6 | Audit | Complete |
-| IA-2 | Authentication | Complete |
-| IA-5 | Authentication | Complete |
-| IR-6 | Incident Response | Complete |
-| MP-6 | Media Protection | Complete |
-| PE-17 | Physical/Environmental | Complete |
-| PS-3 | Personnel | Complete |
-| PS-6 | Personnel | Complete |
+The gap analysis distinguishes two categories of gaps between CJIS v6.0 and FedRAMP High:
+
+1. **Implementation-level deltas** are controls present in both baselines where CJIS imposes stricter parameters, scope, or methodology. The baseline control exists in FedRAMP High; CJIS tightens it (for example, CJIS requires fingerprint-based background checks for PS-3 while FedRAMP leaves screening method to organizational discretion).
+2. **Control-level gaps** are controls present in the CJIS v6.0 baseline but absent from FedRAMP High entirely. An agency running FedRAMP High must implement these from scratch to satisfy CJIS. These are concentrated in the NIST 800-53 Rev 5 privacy overlay, reflecting CJI's status as sensitive personal data.
+
+Baseline comparison identifies 13 implementation-level deltas and 15 control-level gaps. The analysis below addresses both, grouped by category.
+
+### Implementation-Level Deltas (13 controls)
+
+| Control | Family | Status |
+|---------|--------|--------|
+| PS-3 | Personnel Security | Complete |
+| PS-6 | Personnel Security | Complete |
+| IA-2 | Identification and Authentication | Complete |
+| IA-5 | Identification and Authentication | Complete |
 | SC-12 | Encryption | Complete |
 | SC-13 | Encryption | Complete |
 | SC-28 | Encryption | Complete |
+| MP-6 | Media Protection | Complete |
+| AU-6 | Audit and Accountability | Complete |
+| AC-2 | Access Control | Complete |
+| IR-6 | Incident Response | Complete |
+| PE-17 | Physical and Environmental Protection | Complete |
+| AT-2 | Awareness and Training | Complete |
+
+### Control-Level Gaps (15 controls)
+
+| Control | Family | Cluster | Status |
+|---------|--------|---------|--------|
+| SI-12.1 | System and Information Integrity | Privacy, Retention | Pending |
+| SI-12.2 | System and Information Integrity | Privacy, Retention | Pending |
+| SI-12.3 | System and Information Integrity | Privacy, Retention | Pending |
+| SI-18 | System and Information Integrity | Privacy, Quality | Pending |
+| SI-18.4 | System and Information Integrity | Privacy, Quality | Pending |
+| SI-19 | System and Information Integrity | Privacy, De-identification | Pending |
+| AU-3.3 | Audit and Accountability | PII Limitation | Pending |
+| PE-8.3 | Physical and Environmental Protection | PII Limitation | Pending |
+| AC-3.14 | Access Control | PII Limitation | Pending |
+| SC-7.24 | System and Communications Protection | PII Limitation | Pending |
+| AT-3.5 | Awareness and Training | Training | Pending |
+| IR-2.3 | Incident Response | Training | Pending |
+| IR-8.1 | Incident Response | Incident Response Planning | Pending |
+| PL-9 | Planning | Central Management | Pending |
+| SA-8.33 | System and Services Acquisition | Engineering | Pending |
 
 ---
 
@@ -860,3 +889,21 @@ An auditor will expect to see:
 - **Role-specific training considerations.** CJIS training requirements apply to all personnel with CJI access, but the level of detail may vary by role. A sworn officer querying NCIC needs different emphasis than a database administrator with logical access to CJI at rest. Consider role-based training tracks within the CJIS training program, with shared core content on dissemination rules, Security Addendum, and sanctions, and role-specific content on handling CJI in the user's operational context.
 - **Phishing simulation integration.** If the organization conducts phishing simulations as part of awareness techniques (at-02_odp.05), ensure the simulations include CJI-relevant scenarios (e.g., fake credentials prompts for CJI systems, fake communications purporting to be from the CJIS Systems Officer). Generic phishing simulations do not reflect the threat landscape for law enforcement users.
 - **Content versioning.** CJIS Security Policy has evolved (v5.x to v6.0 was a significant update with alignment to NIST 800-53 Rev 5). Training content must be versioned and updated when policy changes. An organization delivering 2026 training with 2022-era content has not satisfied the content update requirement (at-02_odp.06).
+
+---
+
+## Control-Level Gaps
+
+This section documents controls present in the CJIS v6.0 baseline but absent from the FedRAMP High baseline. Unlike the implementation-level deltas above, where the control exists in both baselines and CJIS imposes stricter parameters, these are entirely new controls a FedRAMP High environment must implement to satisfy CJIS.
+
+Control-level gaps were identified by OSCAL baseline comparison between the CJIS v6.0 baseline (302 controls) and the FedRAMP High baseline (410 controls). Of the 302 CJIS controls, 287 overlap with FedRAMP High and 15 do not. The 15 gap controls cluster around NIST 800-53 Rev 5 privacy requirements, reflecting CJI's classification as sensitive personal data that FedRAMP High does not explicitly address at the privacy-overlay level.
+
+Documentation for each control (baseline text, CJIS relevance, implementation guidance, evidence required) is being added across subsequent releases, grouped by cluster:
+
+- **Privacy, Retention** (SI-12.1, SI-12.2, SI-12.3): CJI retention limits, minimization in testing/training/research, disposal procedures.
+- **Privacy, Quality and De-identification** (SI-18, SI-18.4, SI-19): PII quality operations for CJI, individual access requests, de-identification.
+- **PII Limitation** (AU-3.3, PE-8.3, AC-3.14, SC-7.24): Limiting PII elements in audit records, visitor access records, individual access enforcement, and boundary protection.
+- **Training and Incident Response** (AT-3.5, IR-2.3, IR-8.1): Role-based training on PII/CJI processing, breach-specific IR training, breach response plan.
+- **Planning and Engineering** (PL-9, SA-8.33): Central management of security and privacy controls, minimization as an engineering principle.
+
+OSCAL data for each control is captured in `data/cjis-overlay.json` with the `gap-type` property set to `control-level-gap` (distinguishing them from implementation-level deltas, which carry `gap-type: implementation-delta`).
