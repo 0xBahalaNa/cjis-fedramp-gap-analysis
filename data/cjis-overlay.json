@@ -969,6 +969,147 @@
               ]
             }
           ]
+        },
+        {
+          "control-id": "at-3.5",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "at_3_5_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Role-Based Training on Processing PII",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "training"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "at_3_5_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP requires AT-3 role-based security training and AT-2 awareness but not a specific role-based training obligation for PII processing and transparency controls."
+                    },
+                    {
+                      "id": "at_3_5_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Provide initial and recurring role-based training on PII processing and transparency controls to organization-defined personnel and roles at organization-defined frequency. Distinct from AT-2 (broad CJIS awareness); AT-3.5 targets personnel whose duties include PII processing activities (privacy officer, CJIS Systems Officer, auditors, DBAs with CJI access, developers of CJI processing code)."
+                    },
+                    {
+                      "id": "at_3_5_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define target roles (at-03.05_odp.01) and refresher frequency (at-03.05_odp.02). Build role-specific content covering the organization's authority to process CJI, applicable privacy notices, dissemination agreements, privacy impact assessments, and role-specific obligations. Integrate with existing AT-3 role-based security training by adding a privacy module. Track completion per role including role-entry gating where applicable. Coordinate with the state CSA for state-specific requirements."
+                    },
+                    {
+                      "id": "at_3_5_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Defined role list (at-03.05_odp.01 value); defined refresher frequency (at-03.05_odp.02 value); role-specific training content covering PII processing and transparency controls; completion rosters per role with dates; integration documentation showing AT-3.5 relationship to AT-2 and AT-3."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ir-2.3",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ir_2_3_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Breach Response Training",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "training"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ir_2_3_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's IR-2 requires general IR training but does not require training specifically on breach identification and response where breach is narrowed to PII-involving incidents."
+                    },
+                    {
+                      "id": "ir_2_3_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Provide IR training specifically on breach identification, response, and reporting. Breach for PII purposes includes loss of control, compromise, unauthorized disclosure or acquisition, or authorized-user access for unauthorized purposes. Content covers breach recognition versus lesser incidents, reporting obligations and timeframes, tabletop exercises, and the organization's breach response workflow."
+                    },
+                    {
+                      "id": "ir_2_3_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Incorporate breach module into existing IR-2 training: breach definition, recognition, reporting channels (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 IR-6 page 171), time-sensitive obligations. Run breach-specific tabletop exercises including insider-misuse scenarios. Cover the authorized-user-unauthorized-purpose case explicitly. Connect training to IR-8.1 notice-determination process. Align cadence with existing IR training (annual typical)."
+                    },
+                    {
+                      "id": "ir_2_3_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "IR training curriculum documenting the breach module; tabletop exercise records from breach-specific simulations (scenario, participants, observations, improvement actions); completion rosters per IR team member; documentation showing IR-6 reporting channels are covered in training."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "ir-8.1",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "ir_8_1_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — IR Plan for Breaches",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "incident-response-planning"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "ir_8_1_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's IR-8 requires a general Incident Response Plan but not the breach-specific process content required by IR-8.1."
+                    },
+                    {
+                      "id": "ir_8_1_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "The IR Plan must include three breach-specific elements: (1) notice determination process for notifying individuals or other organizations; (2) harm assessment process evaluating harm to affected individuals and mitigation mechanisms; (3) identification of applicable privacy requirements (for CJI: CJIS v6.0 IR-6 and IR-8(1) per published policy pages 167-174, state breach notification statutes, Privacy Act exemptions)."
+                    },
+                    {
+                      "id": "ir_8_1_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Write a breach-specific appendix or section of the IR Plan separate from general incident workflow. Define the notice determination decision tree (what data, to whom, likelihood of misuse, notification scope). Define the harm assessment framework for CJI-specific harms (public embarrassment, safety risk for witnesses/informants, judicial consequences for sealed records). Catalog applicable privacy requirements per breach type in a matrix. Rehearse via tabletop exercises and revise based on observed friction."
+                    },
+                    {
+                      "id": "ir_8_1_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "IR Plan breach section or appendix with the three required elements; notice determination decision tree; harm assessment framework with examples applied to typical CJI breach scenarios; applicable privacy requirements matrix mapping breach types to statutes and CJIS Security Policy sections; tabletop exercise results; plan revision history showing updates from exercises or real incidents."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

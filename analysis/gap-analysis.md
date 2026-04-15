@@ -1200,3 +1200,130 @@ Systems processing CJI must:
 - **Monitor volume can be very high.** Every CJI query is potentially a boundary evaluation. Sampling or aggregate telemetry may be necessary; full per-request logging may be prohibitive. Design the monitoring plan to balance evidentiary value with operational cost.
 - **Exception drift is the primary failure mode.** Exceptions created for good reasons become permanent in practice because no one reviews. The review cadence is the control's backstop. Without it, SC-7.24 becomes a policy that everyone exempts in practice.
 - **Ties to SI-12.1 (limit PII elements).** SI-12.1 defines what elements are in-scope; SC-7.24 enforces processing rules on those elements at boundaries. The two controls compose: SI-12.1 is the minimization principle, SC-7.24 is the enforcement mechanism at system edges.
+
+---
+
+### AT-3.5 — Role-Based Training on Processing PII
+
+**NIST 800-53 Rev 5 Control:** Provide [organization-defined personnel or roles] with initial and [organization-defined frequency] training in the employment and operation of personally identifiable information processing and transparency controls.
+
+**CJIS v6.0 Reference:** Role-based PII processing training; distinct from general awareness training (AT-2 implementation-level delta).
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High requires AT-3 role-based training (security responsibilities tied to role) and general awareness training (AT-2) but does not impose a specific role-based training obligation for PII processing and transparency controls. FedRAMP's role-based training focuses on security, not privacy.
+
+#### CJIS v6.0 Requirement
+
+Provide initial and recurring role-based training to defined personnel and roles on PII processing and transparency controls. "Processing" includes the full lifecycle (creation, collection, use, storage, dissemination, disposition); "transparency controls" include the authority to process PII, privacy policies, system of records notices, privacy impact assessments, and information-sharing agreements.
+
+Distinguish AT-3.5 from AT-2 (the existing implementation-level delta):
+- **AT-2** = broad CJIS awareness training for everyone with CJI access (dissemination rules, sanctions, Security Addendum content).
+- **AT-3.5** = role-based training for personnel whose duties include PII processing activities (privacy officer, CJIS Systems Officer, auditors, DPO-equivalent roles, data engineers working with CJI).
+
+#### Implementation Guidance
+
+1. **Define the target roles (at-03.05_odp.01).** Typical roles: senior agency official for privacy (or state equivalent), CJIS Systems Officer, privacy program staff, auditors, database administrators with CJI access, application developers working on CJI processing code. General CJI-query users are usually scoped to AT-2, not AT-3.5.
+2. **Define the refresher frequency (at-03.05_odp.02).** Typical cadences: annual, biennial. The CSA may define state-specific frequency.
+3. **Build role-specific training content.** Content should cover the CSP's or agency's authority to process CJI, applicable privacy notices, dissemination agreements, privacy impact assessments, and the role's specific obligations. Generic privacy training does not satisfy role-based training.
+4. **Integrate with AT-3 role-based training.** Many CSPs/agencies already deliver role-based security training (AT-3). Add a privacy module so role-based training covers both dimensions.
+5. **Track completion per role.** Rosters, completion dates, refresher schedules, and any role-entry gating (training required within N days of role assignment).
+
+#### Evidence Required
+
+- **Defined role list** (at-03.05_odp.01 parameter value).
+- **Defined refresher frequency** (at-03.05_odp.02 parameter value).
+- **Training content** specific to PII processing and transparency controls.
+- **Completion rosters** per role with dates.
+- **Integration documentation** showing how AT-3.5 fits with AT-2 (awareness) and AT-3 (role-based security).
+
+#### Key Considerations
+
+- **Distinct from AT-2.** AT-2 is "everybody learns CJIS awareness." AT-3.5 is "people whose job is PII processing get extra training on the processing-and-transparency controls." Do not collapse these into one training track; the audit expects both.
+- **Privacy impact assessment literacy.** Personnel covered by AT-3.5 should be able to read and act on a privacy impact assessment relevant to their role. Training should include exposure to real PIAs, not just the concept.
+- **Transparency controls for CJI are narrower than for general PII.** Many traditional transparency mechanisms (system of records notices, privacy notices on websites) are constrained or exempt for law enforcement records. Training should cover what transparency applies and what is carved out under Privacy Act (j)(2) and state analogues. Do not teach general-PII transparency practice as if it directly applies to CJI.
+- **Coordinate with the state CSA.** The state CSA may have specific role-based training requirements beyond AT-3.5's floor. Confirm.
+
+---
+
+### IR-2.3 — Breach Response Training
+
+**NIST 800-53 Rev 5 Control:** Provide incident response training on how to identify and respond to a breach, including the organization's process for reporting a breach.
+
+**CJIS v6.0 Reference:** Breach-specific IR training; complements IR-6 implementation-level delta (reporting channels) and IR-8.1 (plan content).
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's IR-2 base requires general incident response training. FedRAMP does not require training specifically on breach identification and response, where "breach" is narrowed to PII-involving incidents.
+
+#### CJIS v6.0 Requirement
+
+Provide incident response training specifically on breach identification, response, and reporting. A breach for PII purposes is loss of control, compromise, unauthorized disclosure, unauthorized acquisition, or access by an unauthorized user — or authorized user acting outside authorized purposes. For CJIS, any incident that exposes or potentially exposes unencrypted CJI qualifies.
+
+Training content covers: recognizing a breach versus a lesser incident, reporting obligations (who to notify, in what timeframe), tabletop exercises simulating breach scenarios, and the organization's breach response workflow.
+
+#### Implementation Guidance
+
+1. **Incorporate into existing IR training (IR-2 base).** Most CSPs/agencies already run IR training annually. Add a breach module covering breach definition, recognition, reporting channels (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 IR-6 page 171), and time-sensitive obligations.
+2. **Run breach-specific tabletop exercises.** Scenario: an administrator's credentials are compromised and are observed to have queried CJI for non-case-related purposes. Walk the team through detection, containment, assessment of scope, notification triggering, and remediation.
+3. **Cover the "authorized user, unauthorized purpose" case.** Many CJI breaches are insider misuse (looking up an ex-spouse, a public figure, a neighbor). Training must address this as a breach, not just external compromises.
+4. **Cover reporting-to-individuals considerations.** When the breach affects identifiable individuals, the IR team must engage with the IR-8.1 notice-determination process. Training connects IR-2.3 to IR-8.1 operationally.
+5. **Track and refresh.** IR training is typically annual; CJIS IR-2.3 should align with that cadence.
+
+#### Evidence Required
+
+- **IR training curriculum** documenting the breach module.
+- **Tabletop exercise records** from breach-specific simulations (scenario, participants, observations, improvement actions).
+- **Completion rosters** for IR-2.3 training per IR team member.
+- **Integration with IR-6 implementation-level delta reporting channels** documented in training material.
+
+#### Key Considerations
+
+- **Insider misuse is the underrecognized breach class.** Law enforcement agencies have a long record of personnel running queries on family, romantic interests, public figures, or people involved in off-duty disputes. These are breaches. Training must frame them as such and connect to sanctions (Security Addendum commitments, 18 USC 2721 criminal liability where applicable).
+- **The 72-hour reporting instinct.** Many staff associate privacy breach reporting with the GDPR 72-hour window. CJIS has its own reporting timeframes (typically faster for initial notification to the CSO). Training should cover the specific CJIS reporting clock, not a generic privacy-law clock.
+- **Distinguish breach from incident.** Not every incident is a breach. A failed phishing attempt blocked by email filtering is an incident; a successful phishing attempt that did not expose PII may or may not be a breach depending on the data at risk. Training must cover the distinction so the team does not over-report or under-report.
+- **Ties to IR-6.** CJIS v6.0 IR-6 (page 171) requires reporting to the CSO, SIB Chief, or Interface Agency Official. IR-2.3 training reinforces the reporting chain; staff should know who to call, at what number, within what timeframe, with what information.
+
+---
+
+### IR-8.1 — Incident Response Plan for Breaches
+
+**NIST 800-53 Rev 5 Control:** Include the following in the Incident Response Plan for breaches involving personally identifiable information: a process to determine if notice to individuals or other organizations is needed; an assessment process to determine the extent of harm, embarrassment, inconvenience, or unfairness to affected individuals and any mechanisms to mitigate such harms; and identification of applicable privacy requirements.
+
+**CJIS v6.0 Reference:** Breach-specific IR Plan content; operates alongside IR-6 (reporting channels) and IR-2.3 (training) to close the breach-response loop.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's IR-8 base requires an Incident Response Plan with general content (incident classes, roles, procedures, metrics). FedRAMP does not require the plan to include breach-specific process content per IR-8.1.
+
+#### CJIS v6.0 Requirement
+
+The IR Plan must include three specific breach-response elements:
+1. **Notice determination process** — decide whether individuals, other organizations, or oversight bodies need to be notified; who makes the decision, using what criteria, within what timeframe.
+2. **Harm assessment process** — evaluate harm (financial, reputational, safety) to affected individuals and identify mitigation mechanisms (credit monitoring, identity protection, corrective record action).
+3. **Applicable privacy requirements identification** — catalog the privacy statutes, regulations, or policies that apply to a given breach type (for CJI: CJIS v6.0 IR-6 and IR-8(1), state breach notification statutes, Privacy Act exemptions, agency-specific requirements).
+
+#### Implementation Guidance
+
+1. **Write a breach-specific appendix or section of the IR Plan.** Separate from general incident response workflow. Breaches have distinct obligations (notification, harm assessment, regulator engagement) that the general IR workflow does not address adequately.
+2. **Define the notice determination process.** Decision tree: what data was exposed, to whom, for how long, with what likelihood of misuse. Outcome: notify individuals? notify the CSO, SIB Chief, or Interface Agency Official (per CJIS v6.0 IR-6)? notify state attorney general (if state breach law applies)? notify media?
+3. **Define the harm assessment process.** Inputs: nature of exposed data (criminal history, fingerprints, investigation details), affected population size and characteristics, exposure duration and visibility. Outputs: harm categorization (low/medium/high) and mitigation mechanism selection.
+4. **Catalog applicable privacy requirements per breach type.** Matrix or table: breach type (for example, unauthorized access to criminal history by insider; CJI exposed externally via misconfigured storage; third-party contractor compromise) mapped to applicable statutes and CJIS Security Policy sections.
+5. **Rehearse and revise.** The IR-8.1 content is aspirational until exercised. Run breach tabletop exercises using the plan; update based on friction observed.
+
+#### Evidence Required
+
+- **IR Plan breach section or appendix** with the three required elements.
+- **Notice determination decision tree** or equivalent structured workflow.
+- **Harm assessment framework** with examples showing application to typical CJI breach scenarios.
+- **Applicable privacy requirements matrix** mapping breach types to statutes and CJIS Security Policy sections.
+- **Tabletop exercise results** demonstrating the plan has been rehearsed.
+- **Revision history** showing the plan has been updated based on exercise outcomes or real incidents.
+
+#### Key Considerations
+
+- **Notice-to-individuals is operationally heavy.** Determining who to notify requires knowing which individuals' CJI was exposed. If the audit log did not capture the specific records accessed during the breach (interacts with AU-3.3 and AU-6), the notice scope may be unknowable. The IR-8.1 plan must either assume worst-case (notify all plausibly affected) or rely on logging evidence (integration with AU-6 implementation-level delta).
+- **Harm framing for CJI is non-standard.** Traditional breach harm framing (credit risk, identity theft) applies loosely to CJI. CJI-specific harms include public embarrassment (criminal history exposure), safety risk (witness/informant identity exposure), and judicial consequences (exposure of sealed records). Harm assessment should use CJI-specific categories, not generic PII categories.
+- **State variance in breach notification law.** State breach notification statutes vary in trigger thresholds, notice content, regulator engagement, and timing. A CSP serving multiple states must cover the union of state obligations. The applicable-privacy-requirements matrix is more complex for multi-state CSPs than for single-state agencies.
+- **CJIS v6.0 Incident Response (IR) family is the source.** The IR family in CJIS v6.0 (published policy pages 167-174) contains the breach reporting and plan content requirements. IR-6 defines the reporting chain (CSO, SIB Chief, or Interface Agency Official per v6.0 page 171) and IR-8(1) defines the breach-specific plan content. CJIS v6.0 reorganized from v5.9.x and no longer uses numbered "Section 5.X" policy areas for IR; map the IR Plan workflow to these specific v6.0 controls directly.
+- **Interplay with IR-6 implementation-level delta.** IR-6 covers who is notified per CJIS v6.0 page 171 (CSO, SIB Chief, or Interface Agency Official). IR-8.1 covers the process the plan documents for breach response. The two controls are complementary; both should be explicitly mapped in the plan.
