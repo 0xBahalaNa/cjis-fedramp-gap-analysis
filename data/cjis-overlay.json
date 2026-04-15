@@ -1051,7 +1051,7 @@
                     {
                       "id": "ir_2_3_cjis_guidance",
                       "name": "implementation-guidance",
-                      "prose": "Incorporate breach module into existing IR-2 training: breach definition, recognition, reporting channels (state CSA, CSO, FBI CJIS Division per IR-6 implementation-level delta), time-sensitive obligations. Run breach-specific tabletop exercises including insider-misuse scenarios. Cover the authorized-user-unauthorized-purpose case explicitly. Connect training to IR-8.1 notice-determination process. Align cadence with existing IR training (annual typical)."
+                      "prose": "Incorporate breach module into existing IR-2 training: breach definition, recognition, reporting channels (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 IR-6 page 171), time-sensitive obligations. Run breach-specific tabletop exercises including insider-misuse scenarios. Cover the authorized-user-unauthorized-purpose case explicitly. Connect training to IR-8.1 notice-determination process. Align cadence with existing IR training (annual typical)."
                     },
                     {
                       "id": "ir_2_3_cjis_evidence",
@@ -1093,7 +1093,7 @@
                     {
                       "id": "ir_8_1_cjis_addition",
                       "name": "cjis-addition",
-                      "prose": "The IR Plan must include three breach-specific elements: (1) notice determination process for notifying individuals or other organizations; (2) harm assessment process evaluating harm to affected individuals and mitigation mechanisms; (3) identification of applicable privacy requirements (for CJI: CJIS Security Policy Section 5.13, state breach notification statutes, Privacy Act exemptions)."
+                      "prose": "The IR Plan must include three breach-specific elements: (1) notice determination process for notifying individuals or other organizations; (2) harm assessment process evaluating harm to affected individuals and mitigation mechanisms; (3) identification of applicable privacy requirements (for CJI: CJIS v6.0 IR-6 and IR-8(1) per published policy pages 167-174, state breach notification statutes, Privacy Act exemptions)."
                     },
                     {
                       "id": "ir_8_1_cjis_guidance",
