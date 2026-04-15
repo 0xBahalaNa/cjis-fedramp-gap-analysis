@@ -37,14 +37,22 @@ Controls where CJIS v6.0 imposes stricter requirements than the FedRAMP High bas
 
 ### Control-Level Gaps
 
-Controls in the CJIS v6.0 baseline that are not in FedRAMP High. Identified via OSCAL baseline comparison (CJIS v6.0: 302 controls, FedRAMP High: 410 controls, 287 shared, 15 CJIS-only). Documentation and OSCAL data for these controls are being added across subsequent releases.
+Controls present in the CJIS v6.0 published control set (FBI CJIS Division, 2024-12-27) that are not in FedRAMP High. Baseline comparison tooling flagged 15 CJIS-only candidates; verification against the published v6.0 document confirmed 12. The three excluded candidates (SI-18, SI-18.4, SI-19 from the NIST 800-53 Rev 5 privacy overlay) are not in the v6.0 control set. See `analysis/gap-analysis.md` Methodology section for details.
 
-| Count | Category | Controls |
-|-------|----------|----------|
-| 6 | Privacy (Retention, Quality, De-identification) | SI-12.1, SI-12.2, SI-12.3, SI-18, SI-18.4, SI-19 |
-| 4 | PII Limitation (Audit, Physical, Access, Boundary) | AU-3.3, PE-8.3, AC-3.14, SC-7.24 |
-| 3 | Training & Incident Response | AT-3.5, IR-2.3, IR-8.1 |
-| 2 | Planning & Engineering | PL-9, SA-8.33 |
+| NIST 800-53 Rev 5 | Family | CJIS v6.0 Requirement | Cluster |
+|--------------------|--------|------------------------|---------|
+| SI-12.1 Limit PII Elements | System and Information Integrity | Limit PII elements processed across CJI lifecycle per org-defined list | Privacy, Retention |
+| SI-12.2 Minimize PII in Testing, Training, Research | System and Information Integrity | De-identification, synthetic data, or masking for non-production CJI | Privacy, Retention |
+| SI-12.3 Information Disposal | System and Information Integrity | Logical/cryptographic erasure or physical destruction at end of retention | Privacy, Retention |
+| AU-3.3 Limit PII in Audit Records | Audit and Accountability | Log object IDs, not object content; minimize PII in audit records | PII Limitation |
+| PE-8.3 Limit PII in Visitor Access Records | Physical and Environmental Protection | Visitor logs collect only operationally necessary PII elements | PII Limitation |
+| AC-3.14 Individual Access | Access Control | Mechanism for individuals to access their own PII, with exemptions | PII Limitation |
+| SC-7.24 PII Processing Rules at Boundaries | System and Communications Protection | Boundary enforcement of PII processing rules with exception tracking | PII Limitation |
+| AT-3.5 Role-Based Training on PII Processing | Awareness and Training | Role-based training for personnel processing CJI (distinct from AT-2) | Training |
+| IR-2.3 Breach Response Training | Incident Response | Breach-specific IR training with tabletop exercises and insider-misuse framing | Training |
+| IR-8.1 IR Plan for Breaches | Incident Response | Notice determination, harm assessment, applicable privacy requirements | Incident Response Planning |
+| PL-9 Central Management | Planning | Centrally manage a defined set of security and privacy controls | Central Management |
+| SA-8.33 Minimization as Engineering Principle | System and Services Acquisition | Privacy-by-design in SDLC with PIA and architectural review | Engineering |
 
 > **Note:** The implementation-level deltas table represents the initial scoping analysis. Additional controls may surface during full OSCAL baseline resolution.
 

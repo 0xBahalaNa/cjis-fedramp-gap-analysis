@@ -1110,6 +1110,100 @@
               ]
             }
           ]
+        },
+        {
+          "control-id": "pl-9",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "pl_9_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Central Management",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "planning"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "pl_9_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP accepts the concept of common controls and inheritance but does not mandate that specific controls be centrally managed."
+                    },
+                    {
+                      "id": "pl_9_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Centrally manage a defined set of security and privacy controls and related processes. Goal is organization-wide standardization: rather than each system team implementing AC-2, AT-2, AU-6, or SI-12.3 individually, the controls are managed centrally and inherited. For CJI, central management typically takes two shapes: CSP-side (CSP manages common controls and offers them as inherited controls to agency tenants) or agency-side (state CSA or central agency privacy program manages CJIS-specific controls across subordinate components)."
+                    },
+                    {
+                      "id": "pl_9_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define the centrally managed control set (pl-09_odp). Candidates from NIST supplemental: AC-2, AT-2/3, AU-3/6/7/11, CA-2/3/7, CM family, SI-2/3/4. Add CJIS-specific items: dissemination logging, Security Addendum administration, fingerprint check workflow. Document inheritance per control in the SSP. Build central management capability through tooling (IAM, LMS, SIEM, compliance platform) and organizational structure (privacy office, CSO, CJIS Systems Officer). Measure inheritance coverage across consuming systems."
+                    },
+                    {
+                      "id": "pl_9_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Defined centrally managed control set per pl-09_odp; inheritance documentation in the SSP per control; central management tooling evidence (IAM configuration, LMS records, SIEM deployment); organizational chart showing central management functions; coverage metrics showing which systems inherit which controls and any gaps."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "sa-8.33",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "sa_8_33_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Minimization as Engineering Principle",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "engineering"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "sa_8_33_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP's SA-8 requires security engineering principles during development but not privacy minimization as a specific engineering principle. Privacy engineering is not part of the FedRAMP High SA-family baseline."
+                    },
+                    {
+                      "id": "sa_8_33_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Implement the privacy principle of minimization (process only PII directly relevant and necessary; retain only as long as necessary) via defined engineering processes. Engages at system design, acquisition, and development time, not only at operational runtime. Architectural counterpart to the runtime minimization controls SI-12.1, SI-12.2, SI-12.3, SC-7.24, SI-19, AU-3.3, PE-8.3."
+                    },
+                    {
+                      "id": "sa_8_33_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Adopt privacy-by-design in the SDLC. Require minimization analysis in every design document or acquisition spec touching CJI: what PII, why, how long, with what lifecycle controls. Define engineering processes (sa-08.33_odp): privacy design review, PII data flow analysis, PIA completion prior to design approval, architectural review board with privacy reviewer, acquisition gate verifying vendor minimization capability. Integrate with FedRAMP SA-8 and SA-15 processes. Tie to PIA as the artifact documenting minimization analysis."
+                    },
+                    {
+                      "id": "sa_8_33_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Defined engineering processes per sa-08.33_odp; privacy design review records for CJI-processing systems; PIA documentation covering minimization analysis; architectural review board minutes showing privacy reviewer participation; acquisition evidence showing vendor minimization capability was verified (contract language, demonstrations, test results)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
