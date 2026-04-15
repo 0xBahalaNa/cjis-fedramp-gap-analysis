@@ -781,6 +781,147 @@
               ]
             }
           ]
+        },
+        {
+          "control-id": "si-18",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_18_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — PII Quality Operations",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-quality"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_18_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP addresses information integrity operationally (SI-2, SI-3, SI-4) but not the affirmative PII accuracy and correction obligation that SI-18 imposes."
+                    },
+                    {
+                      "id": "si_18_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Establish a PII quality operations program that periodically checks CJI accuracy, relevance, timeliness, and completeness across the information lifecycle, and corrects or deletes records found to be inaccurate or outdated. Frequency is organization-defined per si-18_odp.01 through si-18_odp.04. CJI accuracy is operationally critical; inaccurate CJI can cause wrongful arrest, denied firearm purchase, improper security clearance decisions."
+                    },
+                    {
+                      "id": "si_18_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define accuracy-check frequency per CJI data class in the SSP. Establish authoritative sources (state CHRI, NCIC) per class; honor source updates and bound cache lifetimes. Build a correction workflow covering detection, correction, propagation to all copies, logging, and affected-party notification. Integrate with source system update feeds. Apply input validation at collection (address, DOB format, biometric quality)."
+                    },
+                    {
+                      "id": "si_18_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Accuracy-check frequency documented per CJI class; authoritative-source register linking each class to upstream source and update mechanism; correction workflow documentation; sample correction events with scope and affected-system coverage; input validation at collection points with examples of rejections."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "si-18.4",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_18_4_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Individual Requests",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-quality"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_18_4_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP does not require a subject-initiated correction or deletion mechanism. U.S. subject rights are sector-specific (HIPAA, GLBA, Privacy Act) and FedRAMP does not generalize them."
+                    },
+                    {
+                      "id": "si_18_4_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Honor individual requests for correction or deletion of PII. For CJI, adjudicate against statutory retention mandates and state expungement law. Correction requests address inaccurate data; deletion is generally achievable only via expungement/sealing under state law."
+                    },
+                    {
+                      "id": "si_18_4_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define the request intake channel, typically coordinated with the state CSA. Authenticate requesters as the subject. Route to senior agency official for privacy and legal counsel for adjudication; expungement requests require judicial intervention. Execute on the adjudicated decision by updating primary record and propagating to backups, DR, downstream systems, and audit logs. Notify requester of outcome. Track request volume, resolution time, and approval rate as metrics."
+                    },
+                    {
+                      "id": "si_18_4_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Request intake documentation (channel, authentication, forms); adjudication records linking each request to legal/privacy review; execution records showing correction or deletion across all copies; requester notification records; aggregate metrics for the reporting period."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "si-19",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_19_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — De-identification",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-deidentification"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_19_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP does not require a de-identification capability or effectiveness evaluation for derivative datasets."
+                    },
+                    {
+                      "id": "si_19_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "When datasets containing CJI are produced for research, statistics, training, or other non-operational purposes, remove organization-defined identifying PII elements and evaluate de-identification effectiveness at organization-defined frequency. Applies to derivative datasets, not operational CJI. Techniques include direct-identifier removal, quasi-identifier generalization, differential privacy, and k-anonymity models."
+                    },
+                    {
+                      "id": "si_19_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Inventory non-operational datasets derived from CJI (statistics, training corpora, research extracts, public dashboards). Define in-scope PII elements per dataset type. Select technique per dataset (direct-identifier removal as baseline; differential privacy for public releases; k-anonymity or similar for research datasets). Evaluate effectiveness on the defined frequency against current re-identification threats. Document the evaluation output. Pair technical de-identification with contractual data-use agreements for external releases."
+                    },
+                    {
+                      "id": "si_19_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "In-scope dataset inventory; de-identification policy specifying technique per dataset type and in-scope elements; de-identified dataset samples demonstrating technique application; periodic effectiveness evaluation records describing residual re-identification risk; data-use agreements for externally shared de-identified datasets."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

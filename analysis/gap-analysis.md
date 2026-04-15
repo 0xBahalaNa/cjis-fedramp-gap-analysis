@@ -1039,3 +1039,138 @@ Typical disposal techniques:
 - **Log-retention tension.** AU-6 implementation-level delta requires 1-year minimum retention for CJI audit events; SI-12.3 requires disposal at retention end. The reconciliation: dispose at exactly 1 year plus any extension, not earlier (would violate AU-6) and not later (would violate SI-12.3 minimization principle).
 - **Backup retention alignment.** Backup systems often retain for years for DR purposes. A 7-day retention on an active database plus a 2-year retention on its nightly backup is an inconsistency — the backup retains what the active system has disposed. Align backup retention with the disposal schedule or document the deliberate offset and its legal/operational basis.
 - **Cloud provider snapshot copies.** Some cloud services retain snapshots or transit copies that the customer does not directly control (for example, AWS S3 versioning history, RDS automated backups). Understand the provider's data lifecycle and ensure provider disposal mechanisms align with SI-12.3, or contractually flow down the obligation to the provider.
+
+---
+
+### SI-18 — Personally Identifiable Information Quality Operations
+
+**NIST 800-53 Rev 5 Control:** Check the accuracy, relevance, timeliness, and completeness of personally identifiable information across the information lifecycle at [organization-defined frequency]; and correct or delete inaccurate or outdated personally identifiable information.
+
+**CJIS v6.0 Reference:** PII quality overlay; applies to CJI accuracy given the high stakes of inaccurate criminal justice data.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's treatment of information integrity is principally operational (SI-2 flaw remediation, SI-3 malicious code protection, SI-4 system monitoring) rather than PII-specific. FedRAMP does not impose the affirmative accuracy-and-correction obligation that SI-18 requires. The FedRAMP PII posture is primarily protective (don't expose PII) rather than curative (ensure PII is accurate).
+
+#### CJIS v6.0 Requirement
+
+Establish a PII quality operations program that periodically checks CJI accuracy, relevance, timeliness, and completeness across the lifecycle, and corrects or deletes records found to be inaccurate or outdated. The frequency of checks is organization-defined but must be documented.
+
+CJI accuracy is operationally critical. An inaccurate NCIC wanted-person flag can cause wrongful arrest. An outdated criminal history return can cause a firearm purchase denial for someone whose record has been expunged. Accuracy is not a privacy-of-the-individual concern alone; it is a public safety and civil liability concern.
+
+#### Implementation Guidance
+
+1. **Define accuracy-check frequency per CJI class.** Active-case records may require real-time accuracy against source systems (for example, NCIC refresh on query rather than cached stale copy). Archived records may have lower frequency. Document the frequency in the SSP against the four organization-defined parameters (si-18_odp.01-.04: accuracy, relevance, timeliness, completeness).
+2. **Establish authoritative sources.** For each CJI data class, identify the authoritative source (for example, state criminal history repository, NCIC) and require the CJIS system to honor updates from the source rather than cache indefinitely. Stale caches that outlive source updates violate timeliness.
+3. **Build a correction workflow.** When inaccurate CJI is identified, the workflow should: (a) correct or delete the record in the primary system, (b) propagate the correction to all copies (backups, replicas, downstream systems), (c) log the correction event with source justification, (d) notify affected parties if the inaccurate record was disseminated.
+4. **Integrate with source system updates.** Many CJI accuracy issues arise because the primary system has stale data. Subscribe to update feeds from authoritative sources where available; periodically reconcile where not.
+5. **Validation at collection.** Apply input validation at CJI collection points (for example, address verification, DOB format, biometric quality checks). Accurate collection reduces downstream correction burden.
+
+#### Evidence Required
+
+- **Accuracy-check frequency** documented per CJI class in the SSP.
+- **Authoritative-source register** linking each CJI data class to its upstream source system and update mechanism.
+- **Correction workflow documentation** covering detection, correction, propagation, logging, and notification.
+- **Sample correction events** showing workflow execution — date of detection, scope of correction, affected systems, notification records.
+- **Input validation** documented at collection points with examples of rejected/corrected inputs.
+
+#### Key Considerations
+
+- **Public-safety stakes raise the bar.** PII quality for CJI is not an abstract privacy obligation. Wrongful arrests, denied firearm purchases, and improper security-clearance decisions have been traced to inaccurate CJI. Treat SI-18 as a high-stakes operational control, not a privacy checkbox.
+- **CJI often cannot be "deleted" outright.** Criminal history and court records have statutory retention mandates. Correction may mean updating a status (for example, flagging an expungement) rather than physical deletion. SI-18 must accommodate this; "correct or delete" is disjunctive, not conjunctive.
+- **Propagation challenges.** When CJI propagates to downstream systems (for example, dispatch consoles, mobile data terminals), correction must propagate too. A correction that lands in the primary but not the MDT cache leaves an inaccurate copy in operational use. Architect for cascading updates.
+- **Dissemination log integration.** To notify affected parties of a correction, the CSP or agency must know where the inaccurate record was disseminated. Dissemination logging (which user/system received which CJI record at which time) is therefore a precondition for SI-18 correction notification. This creates a feedback link into audit logging (intersects with AU-3.3, AU-6 implementation-level delta).
+- **Source of truth versus cached copy.** If the CJIS system architecture caches CJI retrieved from an external authoritative source (state CHRI, NCIC), the cache lifetime is effectively the PII quality window. A 24-hour cache means CJI can be up to 24 hours stale. Document the cache policy and its alignment with operational accuracy requirements.
+
+---
+
+### SI-18.4 — Individual Requests
+
+**NIST 800-53 Rev 5 Control:** Correct or delete personally identifiable information upon request by individuals or their designated representatives.
+
+**CJIS v6.0 Reference:** PII quality overlay; subject-initiated correction rights with criminal-justice carve-outs.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High does not require a subject-initiated correction or deletion mechanism. Subject rights under U.S. federal law vary by sector (HIPAA for health, GLBA for financial, Privacy Act for federal agency records); FedRAMP does not generalize these into a baseline control.
+
+#### CJIS v6.0 Requirement
+
+Honor individual requests for correction or deletion of PII. For CJI specifically, this is read alongside statutory criminal-justice retention mandates: an individual's request to delete a criminal history record is adjudicated against whether the record is subject to mandatory retention (most are) or eligible for expungement/sealing under state law.
+
+Within CJIS context, SI-18.4 typically manifests as:
+- **Correction requests**: an individual asserts that their record contains inaccurate information (wrong DOB, wrong disposition of a case, wrong middle name). The CSP/agency must provide a process to receive, evaluate, and act on such requests.
+- **Expungement requests**: adjudicated under state law; not a general-purpose deletion right. If the state court orders expungement, the CSP/agency must honor the order within defined timeframes.
+- **Access requests (seeing what CJI is held about the individual)**: adjacent to SI-18.4 but typically addressed under separate statutory rights (Privacy Act, state FOIA equivalents).
+
+#### Implementation Guidance
+
+1. **Define the request intake channel.** Usually coordinated with the state CSA (CJIS Systems Agency). Document the process: who receives requests, how they are authenticated (verifying the requester is the subject), what forms and evidence are required.
+2. **Route to legal/privacy adjudication.** SI-18.4 requests involving criminal history cannot be honored unilaterally. Route to the senior agency official for privacy (or state equivalent) and legal counsel. Some requests require judicial intervention (expungement orders).
+3. **Execute on the adjudicated decision.** Once a correction or deletion is approved: update the primary record, propagate to all copies (backups, DR, downstream systems, logs), document the action in the case file, and retain the adjudication record for audit.
+4. **Notify the requester.** Communicate the outcome (correction made, deletion made, request denied with reason).
+5. **Track metrics.** Report to the SSP: number of requests received, number approved versus denied, average time-to-resolve, propagation coverage.
+
+#### Evidence Required
+
+- **Request intake documentation** — the channel, authentication requirements, forms, and publication of the process so individuals know how to request.
+- **Adjudication records** linking each request to the legal/privacy review and the final disposition.
+- **Execution records** showing the correction or deletion across primary, backup, DR, and downstream systems.
+- **Requester notification records** confirming the outcome was communicated.
+- **Aggregate metrics** for the reporting period (request volume, resolution time, approval rate).
+
+#### Key Considerations
+
+- **Criminal-justice retention mandates constrain SI-18.4.** Unlike GDPR or CCPA, there is no broad "right to be forgotten" for CJI. Most criminal justice records are subject to mandatory retention under state or federal law. The correction right is exercisable; the deletion right is heavily constrained.
+- **Expungement is the primary "deletion" pathway.** An individual whose record is eligible for expungement under state law (varies widely: sealed juvenile records, first-offender diversions, pardons) must pursue a court order. Once ordered, the CSP/agency must execute the order, which is when SI-18.4 engages.
+- **Propagation scope includes audit logs.** A record expunged from the primary database but preserved verbatim in audit logs defeats the expungement. SI-18.4 propagation must include audit logs, which intersects with AU-3.3 (limit PII elements in audit records) — if logs contain PII elements, they are in SI-18.4 scope.
+- **CSP versus agency responsibility.** The agency (state or local law enforcement) typically receives and adjudicates the request; the CSP executes the technical action. Contract terms should specify the responsibility boundary and the SLA for CSP execution once the agency authorizes.
+- **Multi-agency CJI sharing.** If CJI was disseminated to other agencies (for example, cross-state information sharing), correction propagation extends to those recipients. The agency must notify recipient agencies, which must in turn execute correction on their own systems. This is workflow-heavy and typically governed by state CSA policy.
+
+---
+
+### SI-19 — De-identification
+
+**NIST 800-53 Rev 5 Control:** Remove the following elements of personally identifiable information from datasets: [organization-defined elements]; and evaluate [organization-defined frequency] for effectiveness of de-identification.
+
+**CJIS v6.0 Reference:** PII privacy overlay; de-identification for research, statistics, and non-operational datasets derived from CJI.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High does not require a de-identification capability or a de-identification effectiveness evaluation.
+
+#### CJIS v6.0 Requirement
+
+When datasets containing CJI are produced for research, statistics, training, or other non-operational purposes, remove the organization-defined identifying PII elements and periodically evaluate the de-identification effectiveness (re-identification risk).
+
+SI-19 is not operational CJI protection — operational CJI is by definition identified (the whole point of criminal history and warrant checks is to identify individuals). SI-19 applies to derived datasets: aggregate crime statistics, training datasets, research extracts, audit sampling outputs. In these contexts, de-identification reduces privacy risk because operational identification is not needed.
+
+De-identification techniques include:
+- **Direct-identifier removal**: strip name, DOB, SSN, photos, fingerprints.
+- **Quasi-identifier generalization**: aggregate ZIP codes to first three digits, DOB to year, crime categories to broader classes.
+- **Noise injection / differential privacy**: mathematically bounded perturbation for statistical release.
+- **k-anonymity / l-diversity / t-closeness**: formal re-identification-risk models requiring that each record be indistinguishable from k-1 others on quasi-identifiers.
+
+#### Implementation Guidance
+
+1. **Identify in-scope datasets.** Enumerate the non-operational datasets derived from CJI that the CSP or agency produces — statistical reports, training corpora, research extracts, public dashboards. Those are the SI-19 targets.
+2. **Define in-scope elements.** Document which PII elements are removed from each dataset type (si-19_odp.01 parameter). Typical floor: direct identifiers. Quasi-identifiers (ZIP, DOB, rare demographic combinations) should be considered based on dataset sensitivity and release context.
+3. **Select technique per dataset.** Direct-identifier removal is baseline. For publicly released statistics, consider differential privacy. For research datasets shared under data-use agreements, k-anonymity or similar formal models are often appropriate.
+4. **Evaluate effectiveness.** On the organization-defined frequency (si-19_odp.02), reassess each de-identified dataset against current re-identification threats. Re-identification techniques improve over time (linked-dataset attacks, machine-learning-assisted re-identification); static de-identification from five years ago may be insufficient today.
+5. **Document the effectiveness evaluation.** Risk assessment output describing the residual re-identification risk and whether additional techniques are required.
+
+#### Evidence Required
+
+- **In-scope dataset inventory** listing the derived datasets that require de-identification.
+- **De-identification policy** specifying the technique per dataset type and the in-scope elements.
+- **De-identified dataset samples** demonstrating technique application (for example, showing direct identifiers removed, quasi-identifiers generalized).
+- **Effectiveness evaluation records** on the defined frequency, describing residual risk and any technique adjustments.
+- **Data-use agreements** or similar contractual controls for datasets shared externally, even after de-identification.
+
+#### Key Considerations
+
+- **Operational CJI is not in SI-19 scope.** A criminal history return to an officer conducting a traffic stop is inherently identified — that's the operational purpose. SI-19 engages when derivative datasets are produced. Do not attempt to de-identify operational CJI flows.
+- **Re-identification risk is dynamic.** Datasets considered de-identified in 2020 may be re-identifiable in 2026 due to linked-dataset attacks using newly available public data. The effectiveness-evaluation requirement exists because static de-identification is not enough.
+- **Differential privacy is the state of the art for statistical release.** If the CSP or agency publishes public-facing statistics derived from CJI (for example, crime-rate dashboards, annual reports), differential privacy provides mathematically bounded guarantees that outperform ad-hoc suppression. It is operationally more complex but materially stronger.
+- **Ties to SI-12.2 (minimize PII in testing, training, research).** SI-12.2 requires minimization technique selection; SI-19 is a specific minimization technique. If SI-12.2 selects "de-identification" as the technique for a training dataset, the de-identification must satisfy SI-19's requirements including the effectiveness evaluation.
+- **Data-use agreements provide contractual reinforcement.** Even a well-de-identified dataset should be released under an agreement prohibiting re-identification attempts. Legal reinforcement plus technical de-identification provides defense in depth against misuse.
