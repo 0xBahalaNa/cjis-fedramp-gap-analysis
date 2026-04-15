@@ -640,6 +640,147 @@
               ]
             }
           ]
+        },
+        {
+          "control-id": "si-12.1",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_12_1_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Limit PII Elements",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-retention"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_12_1_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP includes SI-12 base (information retention generally) but not the privacy enhancement SI-12.1 that requires active minimization of PII elements across the information lifecycle."
+                    },
+                    {
+                      "id": "si_12_1_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Limit the PII elements processed during the CJI information lifecycle (creation, collection, use, processing, storage, maintenance, dissemination, disclosure, disposition) to an organization-defined list of elements. Elements not needed for operational purposes must be excluded from processing even if they are technically available from upstream APIs."
+                    },
+                    {
+                      "id": "si_12_1_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Enumerate the CJI data elements the system processes at each lifecycle stage. Define and document the allowed-elements list in the SSP. Enforce minimization at ingest by filtering incoming payloads to strip unneeded elements before storage. Enforce at disclosure by returning only elements required for the disclosure context. Review the allowed-elements list annually or on system boundary changes. Include backups, DR copies, caches, and logs in the enforcement scope."
+                    },
+                    {
+                      "id": "si_12_1_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "CJI data element inventory per lifecycle stage; design/architecture documents showing where element filtering occurs; sample records or log extracts demonstrating excluded elements are not persisted; review records showing periodic re-evaluation of the allowed-elements list; documented organization-defined parameter value for si-12.01_odp."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "si-12.2",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_12_2_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Minimize PII in Testing, Training, and Research",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-retention"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_12_2_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included in FedRAMP High baseline. FedRAMP addresses development safeguards (CM-4, SA-3) but does not require minimization of PII in non-production environments. Production data in test environments is a common anti-pattern not explicitly prohibited by FedRAMP."
+                    },
+                    {
+                      "id": "si_12_2_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Apply defined techniques (de-identification, synthetic data, data masking, tokenization) to minimize the use of CJI and PII in research, testing, and training contexts. Real CJI in non-production environments is prohibited unless minimized by an explicit technique."
+                    },
+                    {
+                      "id": "si_12_2_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Default to synthetic CJI in non-production environments. Build a reference synthetic dataset with realistic structure. Prohibit production CJI in dev/test by policy and technical enforcement (export restrictions, network segregation, approval gating). Mask direct identifiers when real data shape is required for testing. Use synthetic case scenarios for training rather than real case files. For research use, require IRB-equivalent review and de-identification."
+                    },
+                    {
+                      "id": "si_12_2_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Synthetic dataset documentation; policy prohibiting production CJI in non-production environments; technical controls enforcing the policy (database export restrictions, network segregation, cross-environment transfer audit logs); training material samples showing synthetic data; research governance records including de-identification method documentation."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "control-id": "si-12.3",
+          "adds": [
+            {
+              "position": "ending",
+              "parts": [
+                {
+                  "id": "si_12_3_cjis_delta",
+                  "name": "cjis-delta",
+                  "title": "CJIS v6.0 — Information Disposal",
+                  "props": [
+                    {
+                      "name": "delta-category",
+                      "value": "privacy-retention"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "control-level-gap"
+                    }
+                  ],
+                  "parts": [
+                    {
+                      "id": "si_12_3_cjis_baseline",
+                      "name": "baseline-requirement",
+                      "prose": "Not included at the disposal-enhancement level in FedRAMP High baseline. FedRAMP includes MP-6 (media sanitization) for physical media and SC-28 (protection at rest) for storage encryption, but not the logical information disposal mandate that requires active erasure or cryptographic destruction at end of retention."
+                    },
+                    {
+                      "id": "si_12_3_cjis_addition",
+                      "name": "cjis-addition",
+                      "prose": "Use defined techniques (logical erasure with verified overwrite, cryptographic erasure via key destruction, physical destruction) to dispose of, destroy, or erase CJI and CJI-bearing artifacts at the end of the retention period. Scope includes originals, copies, archived records, and system logs that may contain PII or CJI. Disposal must be scheduled and produce audit evidence."
+                    },
+                    {
+                      "id": "si_12_3_cjis_guidance",
+                      "name": "implementation-guidance",
+                      "prose": "Define retention periods per CJI data class in the SSP. Select the disposal technique per class (logical erasure for active records, cryptographic erasure for cloud archives via KMS key destruction, physical destruction for end-of-life media). Automate disposal where possible (AWS S3 Lifecycle policies). Include logs, backups, DR copies, and caches in the disposal scope. Integrate legal-hold awareness so held records are not disposed on schedule. Produce disposal logs showing what was disposed, when, and by which technique."
+                    },
+                    {
+                      "id": "si_12_3_cjis_evidence",
+                      "name": "evidence-required",
+                      "prose": "Retention schedule per CJI data class; disposal procedures per class; disposal logs (lifecycle policy run reports, secure-delete verification output, key-destruction records); cross-copy coverage documentation showing backups and log archives are in scope; media destruction certificates for physical disposal events; legal-hold workflow documentation."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

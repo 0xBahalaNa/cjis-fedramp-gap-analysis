@@ -907,3 +907,135 @@ Documentation for each control (baseline text, CJIS relevance, implementation gu
 - **Planning and Engineering** (PL-9, SA-8.33): Central management of security and privacy controls, minimization as an engineering principle.
 
 OSCAL data for each control is captured in `data/cjis-overlay.json` with the `gap-type` property set to `control-level-gap` (distinguishing them from implementation-level deltas, which carry `gap-type: implementation-delta`).
+
+---
+
+### SI-12.1 — Limit Personally Identifiable Information Elements
+
+**NIST 800-53 Rev 5 Control:** Limit personally identifiable information being processed in the information life cycle to the following elements of personally identifiable information: [organization-defined elements of PII].
+
+**CJIS v6.0 Reference:** Information Management privacy overlay; applies to CJI as a class of sensitive PII.
+
+#### FedRAMP High Baseline Requirement
+
+Not included at this enhancement level. FedRAMP High includes the SI-12 base control (information management and retention, satisfied via NARA records retention schedules and organizational procedures) but does not include the privacy enhancement SI-12.1. FedRAMP High addresses PII through access controls (AC family), security and privacy attributes (AC-16), and physical access (PE-2) rather than by imposing a lifecycle-wide PII minimization requirement.
+
+#### CJIS v6.0 Requirement
+
+Controls must actively limit the PII elements processed across the CJI information lifecycle (creation, collection, use, processing, storage, maintenance, dissemination, disclosure, disposition) to an organization-defined list. The requirement is data minimization: only process PII elements required for operational purposes; exclude elements not operationally needed even when they are technically available.
+
+CJI qualifies as PII because it includes direct identifiers (name, date of birth, SSN, biometrics) and criminal history data tied to identifiable individuals. CJIS v6.0 imports SI-12.1 to apply the minimization principle to CJI.
+
+#### Implementation Guidance
+
+1. **Enumerate CJI data elements.** Distinguish mandatory operational elements (for example, the NCIC query payload fields needed for a hit/miss response) from optional elements that upstream APIs return by default (photos, address history, secondary identifiers in a bundle).
+2. **Define the allowed-elements list.** Document which specific CJI data elements the system processes at each lifecycle stage. Capture this in the SSP and system design. Elements not on the list must not be stored or processed even if the upstream API returns them.
+3. **Enforce at ingest.** Filter incoming CJI payloads at the API gateway or ingest layer to strip unneeded elements before storage. Display-layer filtering is not sufficient since persisted-but-not-shown elements are still "processed" within the meaning of SI-12.1.
+4. **Enforce at disclosure.** When CJI is returned to users or downstream systems, include only the allowed elements for the disclosure context. A fingerprint-based identity verification response does not need to include a full criminal history unless the operational purpose requires it.
+5. **Review the allowed-elements list.** Review annually or when system boundaries change. Operational needs shift as workflows and integrations evolve.
+
+#### Evidence Required
+
+- **CJI data element inventory** listing elements processed at each lifecycle stage.
+- **Design/architecture documents** showing where element filtering occurs (API gateway, database ingest, dissemination layer).
+- **Sample records** or log extracts demonstrating excluded elements are not persisted.
+- **Review records** showing periodic re-evaluation of the allowed-elements list.
+- **Risk assessment output** informing which elements are in-scope versus out-of-scope under SI-12.1's organization-defined parameter (si-12.01_odp).
+
+#### Key Considerations
+
+- **Bulk-return API design.** Many NCIC and state CJIS query APIs return bundled records in a single response. SI-12.1 compliance requires filtering the bundle to only the elements needed by the requesting workflow, not passing the bundle through wholesale.
+- **PII-in-log is silent retention.** Application logs and audit logs often capture PII elements unintentionally. Apply the minimization principle to log contents. This interacts with AU-3.3 (limit PII elements in audit records), another control-level gap in this analysis.
+- **Secondary copies.** Minimization scope includes backups, DR copies, caches, and ephemeral working data. A system can satisfy minimization in production and violate it in backup snapshots. Include all data copies in the enforcement scope.
+- **Field-level encryption is not minimization.** Encrypting an element still counts as processing it. Encryption is a layered protection, not a substitute for minimization. Decide first whether the element is needed; if yes, then apply encryption (see SC-28 implementation-level delta).
+- **Parameter definition required.** SI-12.1 has an organization-defined parameter (si-12.01_odp). Blank parameters are an audit finding. The CSP or agency must define the in-scope element set explicitly.
+
+---
+
+### SI-12.2 — Minimize Personally Identifiable Information in Testing, Training, and Research
+
+**NIST 800-53 Rev 5 Control:** Use the following techniques to minimize the use of personally identifiable information for research, testing, or training: [organization-defined techniques].
+
+**CJIS v6.0 Reference:** Information Management privacy overlay; applies to CJI in non-production contexts.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High includes general development safeguards (CM-4 security impact analysis, SA-3 system development life cycle) but does not require PII minimization in test, training, or research environments. Production data in test environments is a common anti-pattern that is not explicitly prohibited by FedRAMP alone.
+
+#### CJIS v6.0 Requirement
+
+Apply defined techniques to minimize PII use in non-production contexts (research, testing, training). The control recognizes that these contexts typically do not require real production PII to fulfill their purpose, and that using real PII in them multiplies exposure surface area (developer laptops, training rooms, research outputs, shared test environments).
+
+Techniques in scope:
+- **De-identification** (see SI-19): transforming records so the individual is no longer identifiable.
+- **Synthetic data**: machine-generated records that mimic production structure without containing real values.
+- **Data masking or tokenization**: replacing sensitive elements with placeholders while preserving format for shape-dependent testing.
+- **Subset sampling with legal basis**: rare; requires explicit authorization and typically additional controls.
+
+#### Implementation Guidance
+
+1. **Default to synthetic CJI in non-production.** Build a reference synthetic dataset with realistic structure (names, DOB, case IDs) that test systems can use for integration testing, UAT, performance testing, and training.
+2. **Prohibit production CJI in dev/test.** Policy plus technical enforcement: block export operations from production, require explicit approval gating, segregate network paths so production-to-non-production data flows are observable and restrictable.
+3. **Mask when real data is unavoidable.** Certain performance tests require near-production volume or data distribution that synthetic generation cannot reproduce. In those cases, mask direct identifiers (name, SSN, fingerprint templates, photos) and the identifying link columns. Unmasked CJI in test is a finding regardless of intent.
+4. **Train with scenarios, not case files.** CJIS system training should use synthetic case scenarios. Pulling a real historical case as training material (even an old closed case) is a minimization violation.
+5. **Governance for research use.** If the CSP or agency conducts research on CJI workflows (effectiveness studies, usability testing), require IRB-equivalent review and de-identification before research use.
+
+#### Evidence Required
+
+- **Synthetic dataset documentation** describing the generation method and coverage of test scenarios.
+- **Policy prohibiting production CJI in non-production environments.**
+- **Technical controls** enforcing the policy (database export restrictions, network segregation, audit logs of cross-environment data transfers).
+- **Training material samples** showing synthetic rather than real case data.
+- **Research governance records** if applicable (IRB-equivalent review output, de-identification method documentation, research dataset retention records).
+
+#### Key Considerations
+
+- **Minimization is a technique selection, not a binary.** The control requires defining techniques; the CSP chooses which apply to which context. Synthetic-data-only is the strongest posture. Masking is weaker because re-identification may be possible with auxiliary information. Document the technique per context.
+- **Interacts with SI-19 (de-identification).** De-identification techniques used to satisfy SI-12.2 should be consistent with the SI-19 requirements documented below.
+- **Training environments are often overlooked.** Agencies running CJIS training often use a stripped-down copy of production. Stripped-down is not minimized unless direct identifiers are removed by an explicit technique.
+- **CSP dev/test boundary.** If the CSP runs dev/test environments on behalf of agencies, the CSP inherits the SI-12.2 obligation. Ensure customer CJI does not flow into CSP dev/test and that vendor-side test data is synthetic or masked.
+
+---
+
+### SI-12.3 — Information Disposal
+
+**NIST 800-53 Rev 5 Control:** Use the following techniques to dispose of, destroy, or erase information following the retention period: [organization-defined techniques].
+
+**CJIS v6.0 Reference:** Information Management privacy overlay; disposal of CJI and CJI-bearing artifacts (logs, backups, archives).
+
+#### FedRAMP High Baseline Requirement
+
+Not included at the disposal-enhancement level. FedRAMP High includes MP-6 (media sanitization) for physical media disposal and SC-28 (protection of information at rest) for storage encryption. Neither imposes an explicit logical information disposal mandate — the active erasure or cryptographic destruction of information records when the retention period expires. FedRAMP's SI-12 base control treats retention generally without specifying how disposal executes at end-of-retention.
+
+#### CJIS v6.0 Requirement
+
+Use defined techniques to dispose of, destroy, or erase information at the end of the retention period. Scope includes originals, copies, archived records, and system logs that may contain PII or CJI. Disposal must be an active, scheduled, and evidentiable process rather than an informal "we delete when we clean up."
+
+Typical disposal techniques:
+- **Logical erasure** with verified overwrite (secure delete utilities, database TRUNCATE plus vacuum, file-system zero-fill).
+- **Cryptographic erasure** (destruction of the encryption key rendering the ciphertext permanently unrecoverable; the practical disposal technique for cloud-hosted archives where physical destruction is impossible).
+- **Physical destruction** for end-of-life media (satisfied by MP-6 implementation-level delta procedures).
+
+#### Implementation Guidance
+
+1. **Define retention periods per CJI data class.** Document retention for each CJI category (active-case records, closed-case archives, audit logs, incident records, backup copies). Without explicit periods, "end of retention" is undefined and disposal cannot be triggered on schedule.
+2. **Select disposal technique per data class.** Logical erasure for active-system records, cryptographic erasure for cloud-hosted archives, physical destruction for end-of-life hardware. Document the mapping.
+3. **Automate disposal where possible.** Scheduled disposal jobs (for example, AWS S3 Lifecycle policies that transition and then delete after N days) reduce the risk of retained-past-period records. Manual-only disposal scales poorly and frequently misses archive copies.
+4. **Include logs, backups, caches.** Disposal applies to all copies of the record, including audit logs that captured CJI (intersects with AU-3.3), database replicas, backup snapshots, DR copies, and ephemeral caches. A record disposed in the primary database but preserved in a nightly backup is not disposed within SI-12.3's meaning.
+5. **Produce disposal evidence.** Logs showing the disposal event (what was disposed, when, by which technique). Without evidence, disposal cannot be asserted at audit.
+
+#### Evidence Required
+
+- **Retention schedule** per CJI data class.
+- **Disposal procedures** documenting the technique applied per class.
+- **Disposal logs and reports** showing execution — lifecycle policy run reports, secure-delete verification output, key-destruction records for cryptographic erasure.
+- **Cross-copy coverage evidence** — documentation that backups, DR copies, and log archives are included in the disposal scope and schedule, not excluded by omission.
+- **Media destruction certificates** for physical disposal events (coordinates with MP-6).
+
+#### Key Considerations
+
+- **Cryptographic erasure in cloud environments.** Destroying an AWS KMS customer-managed CMK renders ciphertext in S3, EBS, or RDS permanently unrecoverable. This is often the only practical erasure mechanism for cloud-hosted archives where physical media destruction is not possible. Requires key hierarchy design (see SC-12 implementation-level delta) that supports targeted key destruction without collateral data loss.
+- **Legal holds override disposal.** Records under litigation hold must not be disposed even when the retention period expires. Integrate legal-hold awareness into the disposal automation; a blind lifecycle policy that deletes on schedule regardless of hold status is non-compliant.
+- **Log-retention tension.** AU-6 implementation-level delta requires 1-year minimum retention for CJI audit events; SI-12.3 requires disposal at retention end. The reconciliation: dispose at exactly 1 year plus any extension, not earlier (would violate AU-6) and not later (would violate SI-12.3 minimization principle).
+- **Backup retention alignment.** Backup systems often retain for years for DR purposes. A 7-day retention on an active database plus a 2-year retention on its nightly backup is an inconsistency — the backup retains what the active system has disposed. Align backup retention with the disposal schedule or document the deliberate offset and its legal/operational basis.
+- **Cloud provider snapshot copies.** Some cloud services retain snapshots or transit copies that the customer does not directly control (for example, AWS S3 versioning history, RDS automated backups). Understand the provider's data lifecycle and ensure provider disposal mechanisms align with SI-12.3, or contractually flow down the obligation to the provider.
