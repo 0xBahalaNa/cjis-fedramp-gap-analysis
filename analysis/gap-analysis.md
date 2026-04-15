@@ -9,7 +9,7 @@ The gap analysis distinguishes two categories of gaps between CJIS v6.0 and FedR
 1. **Implementation-level deltas** are controls present in both baselines where CJIS imposes stricter parameters, scope, or methodology. The baseline control exists in FedRAMP High; CJIS tightens it (for example, CJIS requires fingerprint-based background checks for PS-3 while FedRAMP leaves screening method to organizational discretion).
 2. **Control-level gaps** are controls present in the CJIS v6.0 baseline but absent from FedRAMP High entirely. An agency running FedRAMP High must implement these from scratch to satisfy CJIS. These are concentrated in the NIST 800-53 Rev 5 privacy overlay, reflecting CJI's status as sensitive personal data.
 
-Baseline comparison identifies 13 implementation-level deltas and 15 control-level gaps. The analysis below addresses both, grouped by category.
+Baseline comparison identifies 13 implementation-level deltas and 12 control-level gaps. The analysis below addresses both, grouped by category. See the "Methodology" section at the end of this document for how gap controls were verified against the published CJIS v6.0 source text.
 
 ### Implementation-Level Deltas (13 controls)
 
@@ -29,25 +29,22 @@ Baseline comparison identifies 13 implementation-level deltas and 15 control-lev
 | PE-17 | Physical and Environmental Protection | Complete |
 | AT-2 | Awareness and Training | Complete |
 
-### Control-Level Gaps (15 controls)
+### Control-Level Gaps (12 controls)
 
 | Control | Family | Cluster | Status |
 |---------|--------|---------|--------|
-| SI-12.1 | System and Information Integrity | Privacy, Retention | Pending |
-| SI-12.2 | System and Information Integrity | Privacy, Retention | Pending |
-| SI-12.3 | System and Information Integrity | Privacy, Retention | Pending |
-| SI-18 | System and Information Integrity | Privacy, Quality | Pending |
-| SI-18.4 | System and Information Integrity | Privacy, Quality | Pending |
-| SI-19 | System and Information Integrity | Privacy, De-identification | Pending |
-| AU-3.3 | Audit and Accountability | PII Limitation | Pending |
-| PE-8.3 | Physical and Environmental Protection | PII Limitation | Pending |
-| AC-3.14 | Access Control | PII Limitation | Pending |
-| SC-7.24 | System and Communications Protection | PII Limitation | Pending |
-| AT-3.5 | Awareness and Training | Training | Pending |
-| IR-2.3 | Incident Response | Training | Pending |
-| IR-8.1 | Incident Response | Incident Response Planning | Pending |
-| PL-9 | Planning | Central Management | Pending |
-| SA-8.33 | System and Services Acquisition | Engineering | Pending |
+| SI-12.1 | System and Information Integrity | Privacy, Retention | Complete |
+| SI-12.2 | System and Information Integrity | Privacy, Retention | Complete |
+| SI-12.3 | System and Information Integrity | Privacy, Retention | Complete |
+| AU-3.3 | Audit and Accountability | PII Limitation | Complete |
+| PE-8.3 | Physical and Environmental Protection | PII Limitation | Complete |
+| AC-3.14 | Access Control | PII Limitation | Complete |
+| SC-7.24 | System and Communications Protection | PII Limitation | Complete |
+| AT-3.5 | Awareness and Training | Training | Complete |
+| IR-2.3 | Incident Response | Training | Complete |
+| IR-8.1 | Incident Response | Incident Response Planning | Complete |
+| PL-9 | Planning | Central Management | Complete |
+| SA-8.33 | System and Services Acquisition | Engineering | Complete |
 
 ---
 
@@ -896,12 +893,11 @@ An auditor will expect to see:
 
 This section documents controls present in the CJIS v6.0 baseline but absent from the FedRAMP High baseline. Unlike the implementation-level deltas above, where the control exists in both baselines and CJIS imposes stricter parameters, these are entirely new controls a FedRAMP High environment must implement to satisfy CJIS.
 
-Control-level gaps were identified by OSCAL baseline comparison between the CJIS v6.0 baseline (302 controls) and the FedRAMP High baseline (410 controls). Of the 302 CJIS controls, 287 overlap with FedRAMP High and 15 do not. The 15 gap controls cluster around NIST 800-53 Rev 5 privacy requirements, reflecting CJI's classification as sensitive personal data that FedRAMP High does not explicitly address at the privacy-overlay level.
+Control-level gap candidates were initially identified by OSCAL baseline comparison between the CJIS v6.0 baseline (302 controls in tooling output) and the FedRAMP High baseline (410 controls). Tooling flagged 15 CJIS-only candidates. Verification against the published CJIS Security Policy v6.0 document (FBI CJIS Division, 2024-12-27) confirmed 12 of these as present in the v6.0 control set; three tooling-flagged candidates (SI-18, SI-18.4, SI-19 from the NIST 800-53 Rev 5 privacy overlay) are not in the published v6.0 control set and are therefore excluded from the analysis. The 12 verified gap controls cluster around NIST 800-53 Rev 5 privacy requirements that CJIS v6.0 did adopt and FedRAMP High does not include.
 
-Documentation for each control (baseline text, CJIS relevance, implementation guidance, evidence required) is being added across subsequent releases, grouped by cluster:
+Documentation for each control (baseline text, CJIS relevance, implementation guidance, evidence required) is grouped by cluster:
 
 - **Privacy, Retention** (SI-12.1, SI-12.2, SI-12.3): CJI retention limits, minimization in testing/training/research, disposal procedures.
-- **Privacy, Quality and De-identification** (SI-18, SI-18.4, SI-19): PII quality operations for CJI, individual access requests, de-identification.
 - **PII Limitation** (AU-3.3, PE-8.3, AC-3.14, SC-7.24): Limiting PII elements in audit records, visitor access records, individual access enforcement, and boundary protection.
 - **Training and Incident Response** (AT-3.5, IR-2.3, IR-8.1): Role-based training on PII/CJI processing, breach-specific IR training, breach response plan.
 - **Planning and Engineering** (PL-9, SA-8.33): Central management of security and privacy controls, minimization as an engineering principle.
@@ -967,7 +963,7 @@ Not included. FedRAMP High includes general development safeguards (CM-4 securit
 Apply defined techniques to minimize PII use in non-production contexts (research, testing, training). The control recognizes that these contexts typically do not require real production PII to fulfill their purpose, and that using real PII in them multiplies exposure surface area (developer laptops, training rooms, research outputs, shared test environments).
 
 Techniques in scope:
-- **De-identification** (see SI-19): transforming records so the individual is no longer identifiable.
+- **De-identification**: transforming records so the individual is no longer identifiable.
 - **Synthetic data**: machine-generated records that mimic production structure without containing real values.
 - **Data masking or tokenization**: replacing sensitive elements with placeholders while preserving format for shape-dependent testing.
 - **Subset sampling with legal basis**: rare; requires explicit authorization and typically additional controls.
@@ -991,7 +987,7 @@ Techniques in scope:
 #### Key Considerations
 
 - **Minimization is a technique selection, not a binary.** The control requires defining techniques; the CSP chooses which apply to which context. Synthetic-data-only is the strongest posture. Masking is weaker because re-identification may be possible with auxiliary information. Document the technique per context.
-- **Interacts with SI-19 (de-identification).** De-identification techniques used to satisfy SI-12.2 should be consistent with the SI-19 requirements documented below.
+- **De-identification consistency.** When de-identification is selected as the technique, apply it consistently across datasets. SI-19 formalizes de-identification as a separate control in NIST 800-53 Rev 5 but is not in the CJIS v6.0 control set; CJIS treats de-identification as one of several SI-12.2 minimization techniques rather than an independent obligation.
 - **Training environments are often overlooked.** Agencies running CJIS training often use a stripped-down copy of production. Stripped-down is not minimized unless direct identifiers are removed by an explicit technique.
 - **CSP dev/test boundary.** If the CSP runs dev/test environments on behalf of agencies, the CSP inherits the SI-12.2 obligation. Ensure customer CJI does not flow into CSP dev/test and that vendor-side test data is synthetic or masked.
 
@@ -1131,10 +1127,7 @@ Not included. FedRAMP High does not require a subject-access mechanism. U.S. sub
 
 Provide a mechanism enabling individuals to access the organization-defined elements of their own PII. For CJI specifically, the NIST supplemental guidance explicitly recognizes that law enforcement records may be exempt from disclosure under Privacy Act section (j)(2) or state analogues. The control therefore operates as: provide the mechanism; apply the statutory exemptions when responding.
 
-The relationship with SI-18.4 (individual requests for correction/deletion):
-- **AC-3.14 = access** (I want to see what you have about me).
-- **SI-18.4 = correction/deletion** (I want you to fix or remove what you have).
-They are complementary controls; an individual typically exercises access first, then correction.
+AC-3.14 addresses the access side of subject rights (I want to see what you have about me). The correction and deletion side is handled by state expungement law and agency-specific processes rather than by a dedicated CJIS v6.0 control. Individuals typically exercise access first and pursue correction through the relevant state mechanism if inaccuracies are found.
 
 #### Implementation Guidance
 
@@ -1327,3 +1320,117 @@ The IR Plan must include three specific breach-response elements:
 - **State variance in breach notification law.** State breach notification statutes vary in trigger thresholds, notice content, regulator engagement, and timing. A CSP serving multiple states must cover the union of state obligations. The applicable-privacy-requirements matrix is more complex for multi-state CSPs than for single-state agencies.
 - **CJIS v6.0 Incident Response (IR) family is the source.** The IR family in CJIS v6.0 (published policy pages 167-174) contains the breach reporting and plan content requirements. IR-6 defines the reporting chain (CSO, SIB Chief, or Interface Agency Official per v6.0 page 171) and IR-8(1) defines the breach-specific plan content. CJIS v6.0 reorganized from v5.9.x and no longer uses numbered "Section 5.X" policy areas for IR; map the IR Plan workflow to these specific v6.0 controls directly.
 - **Interplay with IR-6 implementation-level delta.** IR-6 covers who is notified per CJIS v6.0 page 171 (CSO, SIB Chief, or Interface Agency Official). IR-8.1 covers the process the plan documents for breach response. The two controls are complementary; both should be explicitly mapped in the plan.
+
+---
+
+### PL-9 — Central Management
+
+**NIST 800-53 Rev 5 Control:** Centrally manage [organization-defined security and privacy controls and related processes].
+
+**CJIS v6.0 Reference:** Central management of selected CJI-relevant security and privacy controls; common-controls-as-a-service model.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High accepts the concept of common controls (inherited from the CSP) but does not mandate that specific controls be centrally managed. The CSP's SSP describes control inheritance; there is no FedRAMP obligation to centralize management of privacy controls specifically.
+
+#### CJIS v6.0 Requirement
+
+Centrally manage a defined set of security and privacy controls and related processes. The goal is organization-wide standardization: rather than each system team implementing AC-2 account management, AT-2 training, AU-6 audit review, or SI-12.3 disposal individually, the controls are managed centrally and inherited.
+
+For CJI environments, central management typically takes one of two shapes:
+- **CSP-side**: The CSP centrally manages common controls (training, screening, audit log aggregation, continuous monitoring) and offers them as inherited controls to agency tenants via the SSP.
+- **Agency-side**: The state CSA or a central agency privacy program centrally manages CJIS-specific controls (background check process, Security Addendum administration, quarterly access reviews) across the agency's subordinate components.
+
+#### Implementation Guidance
+
+1. **Define the centrally managed control set (pl-09_odp).** Candidates explicitly listed in NIST supplemental guidance include AC-2, AT-2/3, AU-3/6/7/11, CA-2/3/7, CM family, SI-2/3/4. Add CJIS-specific items: dissemination logging, Security Addendum administration, fingerprint check workflow.
+2. **Document inheritance in the SSP.** For each centrally managed control, the SSP must specify the managing entity (CSP or agency), the inheriting systems, the evidence produced centrally, and the responsibility split for hybrid controls.
+3. **Build the central management capability.** This is often a combination of tooling (IAM system for AC-2, LMS for AT-2, SIEM for AU-6, central compliance tool for continuous monitoring) and organizational structure (privacy office, CSO office, CJIS Systems Officer).
+4. **Operate at the authorizing boundary.** Central management supports the independence needed for assessment; if the same team implements and assesses, independence is in question. Central management, when coupled with independent assessment, supports ongoing authorization.
+5. **Measure inheritance coverage.** Track which systems inherit which centrally managed controls. Gaps are implicit risk. Report coverage to leadership as a compliance metric.
+
+#### Evidence Required
+
+- **Defined centrally managed control set** (pl-09_odp parameter value).
+- **Inheritance documentation** in the SSP per control.
+- **Central management tooling evidence** (IAM system configuration, LMS records, SIEM deployment, continuous monitoring platform).
+- **Organizational chart** showing the central management functions and reporting relationships.
+- **Coverage metrics** showing which systems inherit which centrally managed controls and any gaps.
+
+#### Key Considerations
+
+- **This is FedRAMP 20x territory.** FedRAMP 20x KSIs favor centrally managed, continuously monitored controls over per-system attestations. PL-9 is the NIST 800-53 Rev 5 hook that CJIS v6.0 uses for the same outcome. A CSP investing in FedRAMP 20x readiness is directly positioning for CJIS PL-9 compliance.
+- **CSP versus agency central management boundary.** In multi-tenant CJIS deployments, the CSP centrally manages infrastructure-level controls; the agency centrally manages agency-specific processes (Security Addendum, fingerprint submission, access reviews). The boundary is contractual and must be documented.
+- **Audit efficiency.** Centrally managed controls are assessed once and inherited across all consuming systems, rather than assessed per system. This compresses audit cost and time. For agencies running multiple CJIS systems, central management is pragmatic.
+- **Central-management failure mode: brittleness.** A single centrally managed training platform outage blocks access for all consuming systems. Central management trades independence for efficiency; redundancy and continuity planning must compensate.
+- **Integration with continuous monitoring.** Central management and continuous monitoring compose well: centralize the controls, centralize the evidence collection, centralize the reporting. This is the pattern for KSI-driven FedRAMP 20x and for a mature CJIS compliance posture.
+
+---
+
+### SA-8.33 — Minimization as an Engineering Principle
+
+**NIST 800-53 Rev 5 Control:** Implement the privacy principle of minimization using [organization-defined processes].
+
+**CJIS v6.0 Reference:** Privacy minimization during system design and acquisition; applies before system build, not as a retrofit.
+
+#### FedRAMP High Baseline Requirement
+
+Not included. FedRAMP High's SA-8 base control requires security engineering principles during development but does not require minimization as a privacy-specific engineering principle. Privacy engineering is not part of the FedRAMP High SA-family baseline posture.
+
+#### CJIS v6.0 Requirement
+
+Implement the privacy principle of minimization — only process PII that is directly relevant and necessary, and only maintain it as long as necessary — via defined engineering processes. The control engages at system design, acquisition, and development time, not only at operational runtime.
+
+This is the architectural counterpart to the runtime minimization controls (SI-12.1 limit PII elements, SI-12.2 minimize PII in testing/training/research, SI-12.3 disposal). SA-8.33 says: before you build or acquire a system, bake minimization into the design.
+
+#### Implementation Guidance
+
+1. **Adopt privacy-by-design in the SDLC.** Every system design document or acquisition spec that touches CJI must include a minimization analysis: what PII is required, why, how long, with what lifecycle controls. Without this analysis, the project should not proceed to build.
+2. **Define the engineering processes (sa-08.33_odp).** Typical processes: privacy design review, PII data flow analysis, PIA completion prior to design approval, architectural review board with a privacy reviewer, acquisition gate requiring vendor-side minimization evidence.
+3. **Integrate with FedRAMP SA-8 and SA-15 processes.** Most CSPs already run a security engineering review (SA-8); extend it to include privacy minimization as a named review criterion.
+4. **Vendor and COTS acquisition.** Many CJIS systems include COTS components or vendor-supplied modules. The acquisition process must verify that vendors support minimization (can filter elements, respect retention settings, expose disposal APIs). Acquisition evidence is part of compliance.
+5. **Tie to PIA (Privacy Impact Assessment).** A PIA is often the artifact documenting minimization analysis. PIAs should be mandatory for systems processing CJI and revisited during major changes.
+
+#### Evidence Required
+
+- **Defined engineering processes** (sa-08.33_odp parameter value).
+- **Privacy design review records** for systems processing CJI.
+- **PIA documentation** covering minimization analysis.
+- **Architectural review board minutes** showing privacy reviewer participation.
+- **Acquisition evidence** showing vendor minimization capability was verified (contract language, capability demonstrations, test results).
+
+#### Key Considerations
+
+- **Minimization is easier in design than in retrofit.** A system built to process every CJI element returned by NCIC is hard to retrofit to process only a subset. A system designed with element filtering at ingest is trivially compliant. SA-8.33 captures this architectural reality.
+- **Ties the privacy cluster together.** SA-8.33 is the design-time hook for the runtime minimization controls: SI-12.1 (elements), SI-12.2 (testing/training/research), SI-12.3 (disposal), SC-7.24 (boundary processing), AU-3.3 (audit record elements), PE-8.3 (visitor record elements). SA-8.33 says: design for all of these from the start.
+- **COTS vendor diligence.** Many police records management systems, dispatch platforms, and evidence management tools are COTS. If the vendor does not support element filtering, configurable retention, or disposal APIs, the acquisition is a compliance problem. Acquisition reviewers should include minimization capability as a scored criterion.
+- **Interacts with FedRAMP 20x KSI metrics.** FedRAMP 20x emphasizes continuous, measurable controls. Minimization is measurable (element count processed per lifecycle stage, retention age distribution, disposal event frequency). SA-8.33 engineering processes should generate these metrics.
+- **Public-safety mission tension.** Law enforcement often argues that more data is better for investigative effectiveness. SA-8.33 constrains that with the directly-relevant-and-necessary floor. Resolving the tension requires explicit design decisions, not gut-feel data hoarding. Training personnel on SA-8.33's minimization principle is part of the broader AT-3.5 role-based privacy training loop.
+
+---
+
+## Methodology
+
+### Source of truth
+
+The authoritative source for the CJIS v6.0 control set in this analysis is the published CJIS Security Policy v6.0 document (FBI CJIS Division, 2024-12-27). The control set is the list of controls referenced in the document's Section 5 (Policy and Implementation) Table of Contents.
+
+Baseline-comparison tooling, including the usfed-compliance MCP `compare_baselines` output for `cjis-v6` vs `fedramp-high`, was used as a starting point to identify candidate implementation-level deltas and control-level gaps. Tooling output is not authoritative. When tooling output disagrees with the published document, the published document governs.
+
+### Verification process
+
+Each control candidate is verified by:
+
+1. Confirming the control's presence in the CJIS v6.0 Section 5 ToC.
+2. Confirming the control's baseline status in FedRAMP High (either present and differing in parameters — implementation-level delta — or absent — control-level gap).
+3. Reading the control text in CJIS v6.0 to confirm the nature of the delta or gap matches the analysis.
+
+### Known tooling-versus-document discrepancies discovered during build
+
+During the initial build of this gap analysis, three controls (SI-18, SI-18.4, SI-19 from the NIST 800-53 Rev 5 privacy overlay) appeared in tooling output as CJIS-only baseline controls. Verification against the published v6.0 document found that these three are not in the v6.0 control set. They are excluded from the analysis. The cluster "Privacy, Quality and De-identification" was therefore removed from the scope; the remaining privacy cluster is "Privacy, Retention" (SI-12.1, SI-12.2, SI-12.3).
+
+This discrepancy is documented here as a methodology caution: future contributors should verify tooling claims against the published v6.0 document before extending the analysis.
+
+### Section references
+
+CJIS v6.0 reorganized from v5.9.x. Prior versions used numbered Policy Areas ("Section 5.3 Incident Response", "Section 5.13 Mobile Devices"). Version 6.0 organizes Section 5 by NIST 800-53 Rev 5 control family (AC, AT, AU, CA, CM, CP, IA, IR, MA, MP, PE, PL, PS, RA, SA, SC, SI, SR) with Policy Area 1 (Information Exchange Agreements) and Policy Area 20 (Mobile Devices) as the only numbered Policy Areas retained. References in this analysis use control identifiers (e.g., IR-6, SI-12(1)) and cite page numbers from the published document rather than v5.9.x-style Section 5.X numbering.
