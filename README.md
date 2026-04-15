@@ -10,7 +10,14 @@ This project makes those deltas explicit, traceable, and machine-readable.
 
 ## Gap Summary
 
-Controls where CJIS v6.0 imposes requirements beyond the FedRAMP High baseline:
+The gap analysis distinguishes two categories of gaps between CJIS v6.0 and FedRAMP High:
+
+- **Implementation-level deltas** — controls present in both baselines, where CJIS imposes stricter parameters, scope, or methodology (e.g., CJIS requires fingerprint-based background checks for PS-3, while FedRAMP allows the organization to define screening method).
+- **Control-level gaps** — controls present in the CJIS v6.0 baseline but absent from FedRAMP High entirely. An agency running FedRAMP High must implement these from scratch to satisfy CJIS. These are concentrated in the NIST 800-53 Rev 5 privacy overlay, reflecting CJI's status as sensitive personal data.
+
+### Implementation-Level Deltas
+
+Controls where CJIS v6.0 imposes stricter requirements than the FedRAMP High baseline:
 
 | NIST 800-53 Rev 5 | FedRAMP High | CJIS v6.0 Delta | Category |
 |--------------------|:------------:|------------------|----------|
@@ -28,7 +35,18 @@ Controls where CJIS v6.0 imposes requirements beyond the FedRAMP High baseline:
 | PE-17 Alternate Work Site | Authorize alternate sites | Specific controls for remote CJI access locations | Physical/Environmental |
 | AT-2 Awareness Training | Annual security training | CJIS Security Awareness Training within 6 months of CJI access, biennial refresher | Training |
 
-> **Note:** This table represents the known deltas identified during initial scoping. The full analysis may surface additional controls where CJIS requirements exceed, refine, or add specificity beyond FedRAMP High.
+### Control-Level Gaps
+
+Controls in the CJIS v6.0 baseline that are not in FedRAMP High. Identified via OSCAL baseline comparison (CJIS v6.0: 302 controls, FedRAMP High: 410 controls, 287 shared, 15 CJIS-only). Documentation and OSCAL data for these controls are being added across subsequent releases.
+
+| Count | Category | Controls |
+|-------|----------|----------|
+| 6 | Privacy (Retention, Quality, De-identification) | SI-12.1, SI-12.2, SI-12.3, SI-18, SI-18.4, SI-19 |
+| 4 | PII Limitation (Audit, Physical, Access, Boundary) | AU-3.3, PE-8.3, AC-3.14, SC-7.24 |
+| 3 | Training & Incident Response | AT-3.5, IR-2.3, IR-8.1 |
+| 2 | Planning & Engineering | PL-9, SA-8.33 |
+
+> **Note:** The implementation-level deltas table represents the initial scoping analysis. Additional controls may surface during full OSCAL baseline resolution.
 
 ## How an Auditor Uses This Output
 

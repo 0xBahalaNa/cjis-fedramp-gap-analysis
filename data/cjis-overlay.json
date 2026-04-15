@@ -6,7 +6,7 @@
       "last-modified": "2026-04-01T00:00:00Z",
       "version": "1.0.0",
       "oscal-version": "1.1.2",
-      "remarks": "OSCAL overlay capturing controls where CJIS Security Policy v6.0 (December 2024) imposes requirements beyond the FedRAMP High baseline. CJIS v6.0 aligns with NIST 800-53 Rev 5 and becomes the audit standard April 1, 2026. Each delta control includes four structured parts: baseline-requirement, cjis-addition, implementation-guidance, and evidence-required.",
+      "remarks": "OSCAL overlay capturing controls where CJIS Security Policy v6.0 (December 2024) imposes requirements beyond the FedRAMP High baseline. CJIS v6.0 aligns with NIST 800-53 Rev 5 and becomes the audit standard April 1, 2026. Each cjis-delta part includes four structured sub-parts: baseline-requirement, cjis-addition, implementation-guidance, and evidence-required. Each cjis-delta part carries a gap-type prop with one of two values: implementation-delta (control present in both baselines; CJIS imposes stricter parameters, scope, or methodology) or control-level-gap (control present in CJIS v6.0 but absent from FedRAMP High; represents a net-new control for FedRAMP-authorized environments seeking CJIS compliance). A delta-category prop further groups controls by topical cluster (personnel, authentication, encryption, privacy-retention, pii-limitation, etc.).",
       "props": [
         {
           "name": "cjis-version",
@@ -44,6 +44,10 @@
                     {
                       "name": "delta-category",
                       "value": "personnel"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -87,6 +91,10 @@
                     {
                       "name": "delta-category",
                       "value": "personnel"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -130,6 +138,10 @@
                     {
                       "name": "delta-category",
                       "value": "authentication"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -173,6 +185,10 @@
                     {
                       "name": "delta-category",
                       "value": "authentication"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -216,6 +232,10 @@
                     {
                       "name": "delta-category",
                       "value": "media-protection"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -259,6 +279,10 @@
                     {
                       "name": "delta-category",
                       "value": "encryption"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -302,6 +326,10 @@
                     {
                       "name": "delta-category",
                       "value": "encryption"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -345,6 +373,10 @@
                     {
                       "name": "delta-category",
                       "value": "encryption"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -388,6 +420,10 @@
                     {
                       "name": "delta-category",
                       "value": "audit"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -431,6 +467,10 @@
                     {
                       "name": "delta-category",
                       "value": "access-control"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -474,6 +514,10 @@
                     {
                       "name": "delta-category",
                       "value": "incident-response"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -517,6 +561,10 @@
                     {
                       "name": "delta-category",
                       "value": "physical-environmental"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
@@ -560,6 +608,10 @@
                     {
                       "name": "delta-category",
                       "value": "training"
+                    },
+                    {
+                      "name": "gap-type",
+                      "value": "implementation-delta"
                     }
                   ],
                   "parts": [
