@@ -31,7 +31,7 @@ Controls where CJIS v6.0 imposes stricter requirements than the FedRAMP High bas
 | SC-28 Protection of Info at Rest | Encryption at rest required | Agency-managed CMK required for CJI at rest; agency retains key revocation authority | Encryption |
 | AU-6 Audit Record Review | Review/analysis per baseline | Weekly audit log review; 1-year minimum retention for CJI-related events | Audit |
 | AC-2 Account Management | Account lifecycle per baseline | Quarterly access reviews for CJI-authorized users | Access Control |
-| IR-6 Incident Reporting | Report to US-CERT | Additional reporting to CSO and FBI CJIS Division within required timeframes | Incident Response |
+| IR-6 Incident Reporting | Report to US-CERT | Additional reporting to state CSA-designated recipient (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 IR-6, page 171) within state-defined timeframes | Incident Response |
 | PE-17 Alternate Work Site | Authorize alternate sites | Specific controls for remote CJI access locations | Physical/Environmental |
 | AT-2 Awareness Training | Annual security training | CJIS Security Awareness Training within 6 months of CJI access, biennial refresher | Training |
 
