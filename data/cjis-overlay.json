@@ -529,17 +529,17 @@
                     {
                       "id": "ir-6_cjis_addition",
                       "name": "cjis-addition",
-                      "prose": "Security incidents involving CJI must be reported to the CJIS Systems Officer (CSO) and the FBI CJIS Division in addition to standard FedRAMP reporting channels. Reporting must occur within timeframes established by the state CSA. The incident reporting chain is: local agency → state CSA/CSO → FBI CJIS Division."
+                      "prose": "Security incidents involving CJI must be reported to the state CSA-designated recipient (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 IR-6, page 171) in addition to standard FedRAMP reporting channels. Reporting must occur within timeframes established by the state CSA. The state CSA selects one or more recipients from {CSO, SIB Chief, Interface Agency Official}; the CSP's obligation is satisfied by reaching the designated recipient(s) for each affected state. Onward escalation to the FBI CJIS Division is the state CSA's responsibility, not the CSP's."
                     },
                     {
                       "id": "ir-6_cjis_guidance",
                       "name": "implementation-guidance",
-                      "prose": "Update incident response plan to include CJIS-specific reporting chain. Document CSO and FBI CJIS Division contact information. Define what constitutes a CJI security incident (unauthorized access, loss, or disclosure of CJI). Establish reporting templates that satisfy both FedRAMP (US-CERT) and CJIS (CSO/FBI) requirements. Conduct tabletop exercises including CJIS reporting procedures."
+                      "prose": "Update incident response plan to include the CJIS-specific reporting chain per CJIS v6.0 IR-6 (page 171). For each state served, document which IR-6 recipient role(s) the state CSA has designated (CSO, SIB Chief, or Interface Agency Official) and maintain primary, backup, and after-hours contact information for each. Define what constitutes a CJI security incident (unauthorized access, loss, or disclosure of CJI). Establish reporting templates that satisfy both FedRAMP (US-CERT) and CJIS (state CSA-designated recipient) requirements. Conduct tabletop exercises including CJIS reporting procedures."
                     },
                     {
                       "id": "ir-6_cjis_evidence",
                       "name": "evidence-required",
-                      "prose": "Incident response plan with CJIS reporting procedures; CSO and FBI CJIS Division contact information documented; incident reporting templates; evidence of tabletop exercises including CJIS reporting chain; sample incident reports demonstrating dual reporting (US-CERT and CJIS)."
+                      "prose": "Incident response plan with CJIS reporting procedures identifying each state CSA's designated IR-6 recipient(s) (CSO, SIB Chief, or Interface Agency Official per CJIS v6.0 page 171); state CSA-designated recipient contact information documented and verified for each state served; incident reporting templates; evidence of tabletop exercises including CJIS reporting chain; sample incident reports demonstrating dual reporting (US-CERT and CJIS)."
                     }
                   ]
                 }
